@@ -1,0 +1,2 @@
+include ':app', ':richtext1', ':xrichtext'
+project(':richtext1').projectDir = new File('richtext')
