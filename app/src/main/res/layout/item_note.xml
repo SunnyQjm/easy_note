@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
-                                                   xmlns:tools="http://schemas.android.com/tools"
-                                                   android:orientation="vertical"
-                                                   android:layout_width="match_parent"
-                                                   android:layout_height="wrap_content"
-                                                   android:layout_marginTop="10dp"
-                                                   android:layout_marginBottom="10dp"
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="?selectableItemBackground"
 >
 
     <TextView
@@ -24,7 +25,7 @@
             app:layout_constraintRight_toRightOf="parent"
     />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <cn.yml.note.views.BlankRecyclerView
             android:id="@+id/recyclerView"
             android:layout_marginTop="5dp"
             android:layout_width="match_parent"
@@ -34,28 +35,38 @@
             app:layout_constraintRight_toRightOf="parent"
     >
 
-    </androidx.recyclerview.widget.RecyclerView>
+    </cn.yml.note.views.BlankRecyclerView>
 
 
+    <com.cunoraz.tagview.TagView
+            android:id="@+id/tagView"
+            app:layout_constraintTop_toBottomOf="@id/recyclerView"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            android:layout_marginTop="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+    </com.cunoraz.tagview.TagView>
     <TextView
             android:id="@+id/tvTime"
             android:layout_marginTop="5dp"
             android:text="刚刚"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/recyclerView"
+            app:layout_constraintTop_toBottomOf="@id/tagView"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginBottom="5dp"/>
     <!--<TextView-->
-            <!--android:text="旅行"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:textColor="@color/text_color_grey"-->
-            <!--android:background="@drawable/round_square_bg_primary_color"-->
-            <!--android:paddingLeft="4dp"-->
-            <!--android:paddingRight="4dp"-->
-            <!--android:id="@+id/tvCategory"-->
-            <!--app:layout_constraintTop_toBottomOf="@+id/tvTime" app:layout_constraintBottom_toTopOf="@+id/tvTime"-->
-            <!--app:layout_constraintStart_toEndOf="@+id/tvTime" android:layout_marginStart="20dp"/>-->
+    <!--android:text="旅行"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:textColor="@color/text_color_grey"-->
+    <!--android:background="@drawable/round_square_bg_primary_color"-->
+    <!--android:paddingLeft="4dp"-->
+    <!--android:paddingRight="4dp"-->
+    <!--android:id="@+id/tvCategory"-->
+    <!--app:layout_constraintTop_toBottomOf="@+id/tvTime" app:layout_constraintBottom_toTopOf="@+id/tvTime"-->
+    <!--app:layout_constraintStart_toEndOf="@+id/tvTime" android:layout_marginStart="20dp"/>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

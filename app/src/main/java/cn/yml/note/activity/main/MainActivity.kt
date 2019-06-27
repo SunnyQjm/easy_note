@@ -18,7 +18,6 @@ import org.jetbrains.anko.alert
 import org.jetbrains.anko.appcompat.v7.Appcompat
 import org.jetbrains.anko.db.*
 import org.jetbrains.anko.noButton
-import org.jetbrains.anko.toast
 import org.jetbrains.anko.yesButton
 
 /**
@@ -54,6 +53,13 @@ class MainActivity : AppCompatActivity() {
             App.note = noteAdapter!!.getItem(position)
             jumpTo(EditActivity::class.java, IntentParam()
                 .add(EditActivity.PARAM_MODE, 1))
+        }
+        noteAdapter?.onBlankAreaClick = object : NoteAdapter.OnBlankAreaClickListener {
+            override fun onItemClick(adapter: NoteAdapter, item: Note) {
+                App.note = item
+                jumpTo(EditActivity::class.java, IntentParam()
+                    .add(EditActivity.PARAM_MODE, 1))
+            }
         }
 
         // 长按删除
