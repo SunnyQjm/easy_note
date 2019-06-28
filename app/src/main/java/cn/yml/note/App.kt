@@ -1,21 +1,19 @@
 package cn.yml.note
 
 import android.app.Application
-import cn.yml.note.extensions.toJson
+import cn.bmob.v3.Bmob
 import cn.yml.note.model.Note
-import cn.yml.note.utils.GsonUtil
-import cn.yml.note.utils.database
-import com.google.gson.reflect.TypeToken
-import org.jetbrains.anko.db.classParser
-import org.jetbrains.anko.db.parseList
-import org.jetbrains.anko.db.rowParser
-import org.jetbrains.anko.db.select
+import com.zzhoujay.richtext.RichText
 
 class App : Application() {
     companion object {
         var note: Note? = null
+        const val APP_NAME = "easy_note"
     }
     override fun onCreate() {
         super.onCreate()
+
+        Bmob.initialize(this, "524302a382e690834ae1521c45fa19b4")
+        RichText.initCacheDir(this)
     }
 }

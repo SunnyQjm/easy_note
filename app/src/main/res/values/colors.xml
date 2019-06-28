@@ -4,8 +4,17 @@
     <color name="colorPrimaryDark">#FFCC14</color>
     <color name="colorAccent">#D81B60</color>
     <color name="grey">#F0F0EE</color>
+    <color name="gray">#999</color>
     <color name="text_color">#333</color>
     <color name="text_color_grey">#888</color>
     <color name="white">#fff</color>
     <color name="black">#000</color>
+    <color name="transparent">#0fff</color>
+
+    <color name="doyin_black">#161923</color>
+    <color name="light_grey">#eee</color>
+    <color name="text_gray">#333333</color>
+    <color name="red">#f00</color>
+
+    <color name="line_gray">#dddddd</color>
 </resources>

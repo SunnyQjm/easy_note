@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.edit.EditActivity
+import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.activity.setting.SettingActivity
 import cn.yml.note.extensions.jumpTo
 import cn.yml.note.extensions.toJson
@@ -41,7 +42,8 @@ class MainActivity : AppCompatActivity() {
             jumpTo(EditActivity::class.java)
         }
         imgSetting.setOnClickListener {
-            jumpTo(SettingActivity::class.java)
+//            jumpTo(SettingActivity::class.java)
+            jumpTo(RegisterLoginActivity::class.java)
         }
 
         noteAdapter = NoteAdapter(mutableListOf())

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+>
+
+    <include
+            android:id="@+id/include2"
+            layout="@layout/bar"/>
+
+
+    <cn.yml.note.views.TinImageView
+            android:id="@+id/imageView3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="100dp"
+            android:layout_marginLeft="100dp"
+            android:layout_marginRight="100dp"
+            android:layout_marginStart="100dp"
+            android:layout_marginTop="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/include2"
+            app:srcCompat="@drawable/logo"/>
+
+    <cn.yml.note.views.ClearAbleEditText
+            android:id="@+id/etPhone"
+            style="@style/login_et_style"
+            android:hint="@string/phone_number"
+            android:layout_marginTop="25dp"
+            app:left_drawable="@drawable/phone"
+            app:drawable_width="30dp"
+            app:drawable_height="30dp"
+            app:right_drawable_width="20dp"
+            app:right_drawable_height="20dp"
+            app:right_drawable="@drawable/delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageView3"/>
+
+    <cn.yml.note.views.ClearAbleEditText
+            android:id="@+id/etCode"
+            style="@style/login_et_style"
+            android:hint="@string/vertify_code"
+            android:layout_marginTop="25dp"
+            app:left_drawable="@drawable/security"
+            app:drawable_width="30dp"
+            app:drawable_height="30dp"
+            app:right_drawable_width="20dp"
+            app:right_drawable_height="20dp"
+            app:right_drawable="@null"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etPhone"/>
+
+
+    <Button
+            android:id="@+id/btnLogin"
+            style="?android:borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/btn_bg_primary"
+            android:text="@string/register"
+            android:textColor="@color/white"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/etCode"/>
+    <TextView
+            android:text="@string/send_vertify_code"
+            android:textColor="@color/colorPrimary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvSendCode" app:layout_constraintEnd_toEndOf="@+id/etCode" android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/etCode" app:layout_constraintTop_toBottomOf="@+id/etCode"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

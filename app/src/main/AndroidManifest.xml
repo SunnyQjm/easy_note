@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
           package="cn.yml.note">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET"/> <!-- 允许联网 -->
+    <uses-permission android:name="android.permission.CAMERA"/> <!-- 获取sd卡写的权限，用于文件上传和下载 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/> <!-- 获取GSM（2g）、WCDMA（联通3g）等网络状态的信息 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> <!-- 获取wifi网络状态的信息 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/> <!-- 保持CPU 运转，屏幕和键盘灯有可能是关闭的,用于文件上传和下载 -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/> <!-- 允许读取手机状态 用于创建BmobInstallation -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
 
     <application
             android:name=".App"
             android:allowBackup="true"
-            android:icon="@drawable/icon"
-            android:label="@string/app_name"
-            android:roundIcon="@drawable/icon"
+            android:icon="@drawable/logo"
+            android:label="@string/app__name"
+            android:roundIcon="@drawable/logo"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            tools:replace="android:label"
+    >
+        <activity android:name=".activity.register_login.RegisterLoginActivity">
+        </activity>
+        <activity android:name=".activity.record.RecordActivity">
+        </activity>
         <activity android:name=".activity.picture_preview.PicturePreviewActivity">
         </activity>
         <activity android:name=".activity.setting.SettingActivity">
@@ -40,6 +50,10 @@
             <meta-data
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/provider_paths"/> <!-- 对应xml文件夹下的provider_paths.xml -->
+        </provider>
+        <provider
+                android:name="cn.bmob.v3.util.BmobContentProvider"
+                android:authorities="cn.yml.note.BmobContentProvider">
         </provider>
     </application>
 

@@ -2,6 +2,7 @@ package cn.yml.note.activity.edit
 
 import android.Manifest
 import android.content.DialogInterface
+import android.media.AudioRecord
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -10,17 +11,26 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.view.marginTop
+import cn.bmob.v3.datatype.BmobFile
+import cn.bmob.v3.exception.BmobException
+import cn.bmob.v3.listener.SaveListener
+import cn.bmob.v3.listener.UpdateListener
+import cn.bmob.v3.listener.UploadFileListener
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.picture_preview.PicturePreviewActivity
 import cn.yml.note.extensions.*
 import cn.yml.note.model.Note
 import cn.yml.note.model.params.IntentParam
+import cn.yml.note.model.save
 import cn.yml.note.model.toContentValues
+import cn.yml.note.model.update
 import cn.yml.note.utils.ContentUriUtil
 import cn.yml.note.utils.MyImagePicker
 import cn.yml.note.utils.database
+import com.github.piasy.rxandroidaudio.AudioRecorder
 import com.qingmei2.rximagepicker.core.RxImagePicker
 import com.qingmei2.rximagepicker_extension.MimeType
 import com.qingmei2.rximagepicker_extension_wechat.WechatConfigrationBuilder
@@ -31,9 +41,14 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.zzhoujay.richtext.ImageHolder
 import com.zzhoujay.richtext.callback.OnImageClickListener
 import com.zzhoujay.richtext.callback.OnImageLongClickListener
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
+import java.io.File
+import java.net.URI
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 
 /**
@@ -48,6 +63,10 @@ class EditActivity : AppCompatActivity() {
     private var note = Note()
     private val rxPermissions = RxPermissions(this)
     private lateinit var tagDialog: DialogInterface
+    private lateinit var recordDialog: DialogInterface
+    private lateinit var recordTime: TextView
+    private var hidePosition: Float = 2000f
+
 
     /**
      * mode = 0  ==> 编辑模式
@@ -64,6 +83,7 @@ class EditActivity : AppCompatActivity() {
     }
 
     private fun initView() {
+        hidePosition = dip(1000).toFloat()
         imgBack.setOnClickListener {
             onBackPressed()
         }
@@ -98,8 +118,8 @@ class EditActivity : AppCompatActivity() {
             saveNote()
             when (mode) {
                 0, 2 -> {
-                    etContent.transXY(floatArrayOf(0f, 1000f), floatArrayOf(0f, 0f))
-                    tvPreview.transXY(floatArrayOf(-1000f, 0f), floatArrayOf(0f, 0f))
+                    etContent.transXY(floatArrayOf(0f, hidePosition), floatArrayOf(0f, 0f))
+                    tvPreview.transXY(floatArrayOf(-hidePosition, 0f), floatArrayOf(0f, 0f))
                     changeMode(1)
                 }
                 1 -> {
@@ -164,6 +184,59 @@ class EditActivity : AppCompatActivity() {
         // 添加录音
         llAddSoundRecord.setOnClickListener {
             llAddSoundRecord.scaleXY(1f, 1.2f, 1f)
+            recordDialog = alert {
+                customView {
+                    verticalLayout {
+                        padding = dip(10)
+                        textView("正在录音") {
+                            gravity = Gravity.CENTER
+                            textSize = 18f
+                        }.lparams {
+                            gravity = Gravity.CENTER
+                            width = wrapContent
+                            height = wrapContent
+                            topMargin = dip(10)
+                        }
+
+                        recordTime = textView("00:00") {
+                            gravity = Gravity.CENTER
+                            textSize = 16f
+                        }.lparams {
+                            gravity = Gravity.CENTER
+                            width = wrapContent
+                            height = wrapContent
+                            topMargin = dip(10)
+                        }
+
+                        button("结束录音") {
+                            onClick {
+                                AudioRecorder.getInstance()
+                                    .stopRecord()
+                                recordDialog.dismiss()
+                            }
+                        }.lparams {
+                            topMargin = dip(10)
+                            gravity = Gravity.CENTER
+                        }
+
+                    }
+                }
+            }.show()
+
+            // 开始录音
+            AudioRecorder.getInstance()
+                .easyStartRecord()
+
+            Observable.interval(1000, TimeUnit.MILLISECONDS)
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    llAddSoundRecord.post {
+                        val progress = AudioRecorder.getInstance().progress()
+                        val second = progress.rem(60)
+                        val minutes = progress / 60
+                        recordTime.text = "$minutes : $second"
+                    }
+                }
         }
 
         // 预览便签
@@ -171,8 +244,8 @@ class EditActivity : AppCompatActivity() {
             llPreview.scaleXY(1f, 1.2f, 1f)
             when (mode) {
                 0 -> {
-                    etContent.transXY(floatArrayOf(0f, 1000f), floatArrayOf(0f, 0f))
-                    tvPreview.transXY(floatArrayOf(-1000f, 0f), floatArrayOf(0f, 0f))
+                    etContent.transXY(floatArrayOf(0f, hidePosition), floatArrayOf(0f, 0f))
+                    tvPreview.transXY(floatArrayOf(-hidePosition, 0f), floatArrayOf(0f, 0f))
                     tvPreviewBtnText.text = "查看原文"
                     changeMode(2)
                 }
@@ -180,8 +253,8 @@ class EditActivity : AppCompatActivity() {
 
                 }
                 2 -> {
-                    etContent.transXY(floatArrayOf(1000f, 0f), floatArrayOf(0f, 0f))
-                    tvPreview.transXY(floatArrayOf(0f, -1000f), floatArrayOf(0f, 0f))
+                    etContent.transXY(floatArrayOf(hidePosition, 0f), floatArrayOf(0f, 0f))
+                    tvPreview.transXY(floatArrayOf(0f, -hidePosition), floatArrayOf(0f, 0f))
                     tvPreviewBtnText.text = "预览便签"
                     changeMode(0)
                 }
@@ -267,33 +340,74 @@ class EditActivity : AppCompatActivity() {
      */
     fun insetPicture(uri: Uri) {
         val absolutePath = ContentUriUtil.getPath(this, uri)
-        note.noteImages.add(absolutePath)
-        val index = etContent.selectionStart
-        val insertText = "\n![]($absolutePath)\n"
-        val editable = etContent.editableText
-        if (index < 0 || index >= editable.length) {
-            editable.append(insertText)
-        } else {
-            editable.insert(index, insertText)
+        val file = File(absolutePath)
+        val bmobFile = BmobFile(file)
+        val dialog = indeterminateProgressDialog("正在插入") {
+
         }
+        bmobFile
+            .upload(object : UploadFileListener() {
+                override fun done(p0: BmobException?) {
+                    if (p0 == null) {        // 上传成功
+                        note.noteImages.add(bmobFile.fileUrl)
+                        val index = etContent.selectionStart
+                        val insertText = "\n![](${bmobFile.fileUrl})\n"
+                        val editable = etContent.editableText
+                        if (index < 0 || index >= editable.length) {
+                            editable.append(insertText)
+                        } else {
+                            editable.insert(index, insertText)
+                        }
+                    } else {                // 上传失败
+                    }
+                    dialog.dismiss()
+                }
+
+                override fun onProgress(value: Int?) {
+                    super.onProgress(value)
+                }
+
+            })
+
     }
 
     /**
      * 保存note
      */
     fun saveNote() {
-        database.use {
-            if (note.id.isEmpty()) {         // 新建的便签，则插入到数据库中
-                note.id = UUID.randomUUID().toString()
-                insert(
-                    "note",
-                    null,
-                    note.toContentValues()
-                )
-            } else {                       // 已有的便签，则更新数据库
-                note.createTime = System.currentTimeMillis()
-                update("note", note.toContentValues(), "id = ?", arrayOf(note.id))
-            }
+        if (note.id.isEmpty()) {         // 新建的便签，则插入到数据库中
+            note.save(object : SaveListener<String>() {
+                override fun done(p0: String?, p1: BmobException?) {
+                    if (p1 == null) {
+                        database.use {
+                            insert(
+                                "note",
+                                null,
+                                note.toContentValues()
+                            )
+                        }
+                        toast("保存成功")
+                    } else {
+                        toast("保存失败: " + p1.message)
+                    }
+                }
+            })
+
+        } else {                       // 已有的便签，则更新数据库
+            note.createTime = System.currentTimeMillis()
+            note.update(object : UpdateListener() {
+                override fun done(p0: BmobException?) {
+                    if (p0 == null) {        // 更新成功
+                        database.use {
+                            update("note", note.toContentValues(), "id = ?", arrayOf(note.id))
+                        }
+                        toast("更新成功")
+                    } else {
+                        toast("更新失败: " + p0.message)
+                    }
+                }
+
+            })
         }
     }
 

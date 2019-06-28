@@ -8,4 +8,28 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="OverflowMenuStyle" parent="@style/Widget.AppCompat.PopupMenu.Overflow" >
+        <!-- 是否覆盖锚点，默认为true，即盖住Toolbar -->
+        <item name="overlapAnchor">false</item>
+    </style>
+
+    <!--沉浸式主题-->
+    <style name="AppTheme.StatusTranslate" parent="Theme.AppCompat.Light.NoActionBar">
+        <!--状态栏透明并且最外层布局顶格，除非使用android:fitsystem="true"-->
+        <item name="android:windowTranslucentStatus">true</item>
+    </style>
+
+    <style name="login_et_style">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">40dp</item>
+        <item name="android:layout_marginLeft">40dp</item>
+        <item name="android:layout_marginRight">40dp</item>
+        <item name="android:layout_marginStart">40dp</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:background">@drawable/login_input_bg_selector</item>
+        <item name="android:drawablePadding">10dp</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
 </resources>
