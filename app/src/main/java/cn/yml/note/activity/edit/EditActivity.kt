@@ -97,6 +97,8 @@ class EditActivity : AppCompatActivity() {
             saveNote()
             when (mode) {
                 0, 2 -> {
+                    etContent.transXY(floatArrayOf(0f, 1000f), floatArrayOf(0f, 0f))
+                    tvPreview.transXY(floatArrayOf(-1000f, 0f), floatArrayOf(0f, 0f))
                     changeMode(1)
                 }
                 1 -> {
@@ -169,7 +171,7 @@ class EditActivity : AppCompatActivity() {
             when (mode) {
                 0 -> {
                     etContent.transXY(floatArrayOf(0f, 1000f), floatArrayOf(0f, 0f))
-                    tvPreview.scaleXY(0.5f, 1f)
+                    tvPreview.transXY(floatArrayOf(-1000f, 0f), floatArrayOf(0f, 0f))
                     tvPreviewBtnText.text = "查看原文"
                     changeMode(2)
                 }
@@ -178,7 +180,7 @@ class EditActivity : AppCompatActivity() {
                 }
                 2 -> {
                     etContent.transXY(floatArrayOf(1000f, 0f), floatArrayOf(0f, 0f))
-                    tvPreview.scaleXY(1f, 0.5f)
+                    tvPreview.transXY(floatArrayOf(0f, -1000f), floatArrayOf(0f, 0f))
                     tvPreviewBtnText.text = "预览便签"
                     changeMode(0)
                 }
