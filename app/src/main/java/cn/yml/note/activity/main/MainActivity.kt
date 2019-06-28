@@ -42,8 +42,8 @@ class MainActivity : AppCompatActivity() {
             jumpTo(EditActivity::class.java)
         }
         imgSetting.setOnClickListener {
-//            jumpTo(SettingActivity::class.java)
-            jumpTo(RegisterLoginActivity::class.java)
+            jumpTo(SettingActivity::class.java)
+//            jumpTo(RegisterLoginActivity::class.java)
         }
 
         noteAdapter = NoteAdapter(mutableListOf())

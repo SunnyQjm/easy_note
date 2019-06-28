@@ -8,4 +8,7 @@
     <string name="confirm_password">确认密码</string>
     <string name="please_input_validate_phone_number">请输入有效的手机号</string>
     <string name="send_code_after_serval_second"><![CDATA[%ds之后可再次发送<]]></string>
+    <string name="auto_syn">自动同步</string>
+    <string name="send_vertify_code_fail">发送验证码失败</string>
+    <string name="vertify_code_not_allow_empty">验证码不能为空</string>
 </resources>
