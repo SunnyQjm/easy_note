@@ -18,6 +18,7 @@
             android:id="@+id/textView" android:layout_marginTop="8dp"
             app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="8dp"/>
+
     <ImageView
             android:layout_width="30dp"
             android:layout_height="30dp" app:srcCompat="@drawable/setting"
@@ -30,6 +31,14 @@
             android:id="@+id/imgEdit"
             app:layout_constraintTop_toBottomOf="@+id/imgSetting"
             app:layout_constraintBottom_toTopOf="@+id/imgSetting" app:layout_constraintEnd_toStartOf="@+id/imgSetting"
+            android:layout_marginEnd="16dp"/>
+
+    <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp" app:srcCompat="@drawable/refresh"
+            android:id="@+id/imgRefresh"
+            app:layout_constraintTop_toBottomOf="@+id/imgEdit"
+            app:layout_constraintBottom_toTopOf="@+id/imgEdit" app:layout_constraintEnd_toStartOf="@+id/imgEdit"
             android:layout_marginEnd="16dp"/>
     <View
             android:layout_width="0dp"

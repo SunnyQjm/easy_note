@@ -59,14 +59,16 @@ fun View.scaleXY(vararg values: Float, duration: Long = 500): View {
  * 旋转
  */
 fun View.rotate(vararg values: Float, duration: Long = 500, repeatCount: Int = 0,
-                 repeatMode: Int = ValueAnimator.RESTART): View {
-    with(this.rotationAnimation(*values)
+                 repeatMode: Int = ValueAnimator.RESTART): ObjectAnimator {
+    val animation = this.rotationAnimation(*values)
+    with(animation
             .setDuration(duration)){
         this.repeatCount = repeatCount
         this.repeatMode = repeatMode
         start()
     }
-    return this
+    return animation
+//    return this
 }
 
 /**

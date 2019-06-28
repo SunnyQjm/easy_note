@@ -1,5 +1,6 @@
 package cn.yml.note.activity.main
 
+import android.content.Context
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.bmob.v3.BmobQuery
 import cn.bmob.v3.BmobUser
@@ -51,7 +52,10 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
         }
     }
 
-    fun getContext() = mContext
+    fun getContext(): Context? {
+        return mContext
+    }
+
     interface OnBlankAreaClickListener {
         fun onItemClick(adapter: NoteAdapter, item: Note)
     }
@@ -60,7 +64,7 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
 /**
  * 自动与云端的数据同步
  */
-fun NoteAdapter.autoSyn() {
+fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -> Unit = {}) {
     if (BmobUser.isLogin()) {    // 已登录则尝试同步
         BmobQuery<NetworkNote>()
             .addWhereEqualTo("user", BmobUser.getCurrentUser(User::class.java))
@@ -91,23 +95,29 @@ fun NoteAdapter.autoSyn() {
                             }
 
 
+                            var alreadyUpload = 0
                             // 处理需要上传的便签
                             needUpload.forEach {
                                 it.save(object : SaveListener<String>() {
                                     override fun done(p0: String?, p1: BmobException?) {
-
+                                        alreadyUpload++
+                                        if (alreadyUpload == needUpload.size)
+                                            finishCallback(p1)
                                     }
-                                }, this@autoSyn.getContext(), false)
+                                }, context, false)
                             }
 
                             // 处理需要从云端同步到本地的便签
                             needDownload.forEach {
-                                it.saveToLocal(this@autoSyn.getContext())
+                                it.saveToLocal(context)
+                            }
+                            if(needUpload.isEmpty()) {
+                                finishCallback(null)
                             }
                         }
                         println(p0?.toJson() ?: "")
                     } else {
-                        this@autoSyn.getContext().toast("自动同步失败")
+                        context.toast("自动同步失败")
                     }
                 }
 

@@ -57,22 +57,57 @@ fun NetworkNote.saveToLocal(context: Context) {
     note.saveLocal(context)
 }
 
-fun Note.saveLocal(context: Context) {
+fun Note.saveLocal(context: Context, finish: () -> Unit = {}) {
     context.database.use {
         insert(
             "note",
             null,
             this@saveLocal.toContentValues()
         )
+        finish()
     }
 }
 
-fun Note.updateLocal(context: Context) {
+fun Note.updateLocal(context: Context, finish: () -> Unit = {}) {
     context.database.use {
         update("note", this@updateLocal.toContentValues(), "id = ?", arrayOf(this@updateLocal.id))
+        finish()
     }
 }
 
+fun Note.deleteLocal(context: Context, finish: () -> Unit = {}) {
+    context.database.use {
+        delete(
+            "note",
+            "id = ?", arrayOf(this@deleteLocal.id)
+        )
+        finish()
+    }
+}
+
+fun Note.delete(updateListener: UpdateListener, context: Context) {
+    if (!BmobUser.isLogin() || this.objectId.isEmpty()) {
+        deleteLocal(context)
+        updateListener.done(null)
+        return
+    }
+    val networkNote = NetworkNote(
+        id = this.id,
+        noteTitle = this.noteTitle,
+        noteContent = this.noteContent,
+        tags = this.tags,
+        noteImages = this.noteImages,
+        createTime = this.createTime
+    )
+    networkNote.objectId = this.objectId
+    networkNote.delete(object : UpdateListener() {
+        override fun done(p0: BmobException?) {
+            deleteLocal(context)
+            updateListener.done(p0)
+        }
+
+    })
+}
 
 /**
  * 保存

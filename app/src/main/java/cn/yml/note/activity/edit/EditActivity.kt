@@ -383,7 +383,7 @@ class EditActivity : AppCompatActivity() {
             note.save(object : SaveListener<String>() {
                 override fun done(p0: String?, p1: BmobException?) {
                     if (p1 == null) {
-                        toast("保存成功")
+//                        toast("保存成功")
                     } else {
                         toast("保存失败: " + p1.message)
                     }
@@ -394,7 +394,7 @@ class EditActivity : AppCompatActivity() {
             note.update(object : UpdateListener() {
                 override fun done(p0: BmobException?) {
                     if (p0 == null) {        // 更新成功
-                        toast("更新成功")
+//                        toast("更新成功")
                     } else {
                         toast("更新失败: " + p0.message)
                     }
