@@ -1,6 +1,7 @@
 package cn.yml.note.activity.edit
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.media.AudioRecord
 import android.net.Uri
@@ -13,6 +14,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.marginTop
+import cn.bmob.v3.BmobUser
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.SaveListener
@@ -82,6 +84,7 @@ class EditActivity : AppCompatActivity() {
         initView()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initView() {
         hidePosition = dip(1000).toFloat()
         imgBack.setOnClickListener {
@@ -376,38 +379,28 @@ class EditActivity : AppCompatActivity() {
      */
     fun saveNote() {
         if (note.id.isEmpty()) {         // 新建的便签，则插入到数据库中
+            note.id = UUID.randomUUID().toString()
             note.save(object : SaveListener<String>() {
                 override fun done(p0: String?, p1: BmobException?) {
                     if (p1 == null) {
-                        database.use {
-                            insert(
-                                "note",
-                                null,
-                                note.toContentValues()
-                            )
-                        }
                         toast("保存成功")
                     } else {
                         toast("保存失败: " + p1.message)
                     }
                 }
-            })
-
+            }, this)
         } else {                       // 已有的便签，则更新数据库
             note.createTime = System.currentTimeMillis()
             note.update(object : UpdateListener() {
                 override fun done(p0: BmobException?) {
                     if (p0 == null) {        // 更新成功
-                        database.use {
-                            update("note", note.toContentValues(), "id = ?", arrayOf(note.id))
-                        }
                         toast("更新成功")
                     } else {
                         toast("更新失败: " + p0.message)
                     }
                 }
 
-            })
+            }, this)
         }
     }
 

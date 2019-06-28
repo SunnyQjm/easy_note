@@ -25,7 +25,8 @@ class MyDatabaseOpenHelper private constructor(ctx: Context) : ManagedSQLiteOpen
             "noteImages" to TEXT,
             "noteRecording" to TEXT,
             "tags" to TEXT,
-            "createTime" to INTEGER)
+            "createTime" to INTEGER,
+            "objectId" to TEXT)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

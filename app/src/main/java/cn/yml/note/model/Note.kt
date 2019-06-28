@@ -1,8 +1,10 @@
 package cn.yml.note.model
 
 import android.content.ContentValues
+import android.content.Context
 import android.util.Log
 import cn.bmob.v3.BmobObject
+import cn.bmob.v3.BmobUser
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.BmobUpdateListener
@@ -10,6 +12,7 @@ import cn.bmob.v3.listener.SaveListener
 import cn.bmob.v3.listener.UpdateListener
 import cn.bmob.v3.listener.UploadBatchListener
 import cn.yml.note.extensions.toJson
+import cn.yml.note.utils.database
 import com.cunoraz.tagview.Tag
 import kotlin.reflect.full.memberProperties
 
@@ -24,7 +27,8 @@ data class Note(
     var noteImages: MutableList<String> = mutableListOf(),      // 便签图片
     var noteRecording: MutableList<String> = mutableListOf(),   // 录音
     var tags: MutableList<Tag> = mutableListOf(),            // 标签
-    var createTime: Long = System.currentTimeMillis()           // 创建时间
+    var createTime: Long = System.currentTimeMillis(),           // 创建时间
+    var objectId: String = ""                                   // Bmob对象Id
 )
 
 data class NetworkNote(
@@ -34,6 +38,7 @@ data class NetworkNote(
     var noteImages: MutableList<String> = mutableListOf(),        // 便签图片
     var noteRecording: MutableList<BmobFile> = mutableListOf(),     // 录音
     var tags: MutableList<Tag> = mutableListOf(),                   // 标签
+    var user: User? = null,                                         // 关联的用户
     var createTime: Long = System.currentTimeMillis()               // 创建时间
 ): BmobObject()
 
@@ -41,7 +46,7 @@ data class NetworkNote(
 /**
  * 保存
  */
-fun Note.save(saveListener: SaveListener<String>) {
+fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLocalStorage: Boolean = true) {
     val networkNote = NetworkNote(
         noteTitle = this.noteTitle,
         noteContent =  this.noteContent,
@@ -49,12 +54,37 @@ fun Note.save(saveListener: SaveListener<String>) {
         noteImages = this.noteImages,
         createTime = this.createTime
     )
+    if(!BmobUser.isLogin()) {
+        if(needSaveToLocalStorage) {
+            context.database.use {
+                insert(
+                    "note",
+                    null,
+                    this@save.toContentValues()
+                )
+            }
+        }
+        saveListener.done("", null)
+        return
+    }
+
+    networkNote.user = BmobUser.getCurrentUser(User::class.java)
+
 
     val save = {
         networkNote.save(object : SaveListener<String>() {
             override fun done(p0: String?, p1: BmobException?) {
                 if(p1 == null && p0 != null) {
-                    this@save.id = p0
+                    this@save.objectId = p0
+                    if(needSaveToLocalStorage) {
+                        context.database.use {
+                            insert(
+                                "note",
+                                null,
+                                this@save.toContentValues()
+                            )
+                        }
+                    }
                 } else {
                     Log.e("Note", p1?.message ?: "")
                 }
@@ -85,7 +115,7 @@ fun Note.save(saveListener: SaveListener<String>) {
     }
 }
 
-fun Note.update(updateListener: UpdateListener) {
+fun Note.update(updateListener: UpdateListener, context: Context) {
     val networkNote = NetworkNote(
         id = this.id,
         noteTitle = this.noteTitle,
@@ -94,10 +124,29 @@ fun Note.update(updateListener: UpdateListener) {
         noteImages = this.noteImages,
         createTime = this.createTime
     )
-    networkNote.objectId = this.id
+    networkNote.objectId = this.objectId
+    if(!BmobUser.isLogin() || this.objectId.isEmpty()) {
+        updateListener.done(null)
+        context.database.use {
+            update("note", this@update.toContentValues(), "id = ?", arrayOf(this@update.id))
+        }
+        return
+    }
+
+    networkNote.user = BmobUser.getCurrentUser(User::class.java)
 
     val save = {
-        networkNote.update(updateListener)
+        networkNote.update(object : UpdateListener() {
+            override fun done(p0: BmobException?) {
+                if(p0 == null) {
+                    context.database.use {
+                        update("note", this@update.toContentValues(), "id = ?", arrayOf(this@update.id))
+                    }
+                }
+                updateListener.done(p0)
+            }
+
+        })
     }
 
     val records = this.noteRecording.toTypedArray()

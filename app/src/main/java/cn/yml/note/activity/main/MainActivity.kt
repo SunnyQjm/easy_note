@@ -93,9 +93,9 @@ class MainActivity : AppCompatActivity() {
                 .orderBy("createTime", SqlOrderDirection.DESC)
                 .exec {
                     val result = parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
-                                                       noteRecording: String, tags: String, createTime: Long ->
+                                                       noteRecording: String, tags: String, createTime: Long, objectId: String ->
                         return@rowParser Note(id, noteTitle, noteContent, GsonUtil.json2Bean(noteImages),
-                            GsonUtil.json2Bean(noteRecording), GsonUtil.json2TagList(tags), createTime)
+                            GsonUtil.json2Bean(noteRecording), GsonUtil.json2TagList(tags), createTime, objectId)
                     })
                     println(result.toJson())
                     noteAdapter?.data?.clear()
