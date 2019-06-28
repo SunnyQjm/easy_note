@@ -30,6 +30,7 @@ import kotlinx.android.synthetic.main.bar.*
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.zzhoujay.richtext.ImageHolder
 import com.zzhoujay.richtext.callback.OnImageClickListener
+import com.zzhoujay.richtext.callback.OnImageLongClickListener
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.util.*
@@ -331,13 +332,17 @@ class EditActivity : AppCompatActivity() {
     fun renderRichText(content: String) {
         RichText.fromMarkdown(content)
             .scaleType(ImageHolder.ScaleType.fit_center) // 图片缩放方式
-            .imageClick { imageUrls, position ->
-                jumpTo(
-                    PicturePreviewActivity::class.java, IntentParam()
-                        .add(PicturePreviewActivity.PARAM_PICTURES, imageUrls.toTypedArray())
-                        .add(PicturePreviewActivity.PARAM_POSITION, position)
-                )
-            }
+//            .imageLongClick(OnImageLongClickListener { imageUrls, position ->
+//
+//                return@OnImageLongClickListener true
+//            })
+//            .imageClick { imageUrls, position ->
+//                jumpTo(
+//                    PicturePreviewActivity::class.java, IntentParam()
+//                        .add(PicturePreviewActivity.PARAM_PICTURES, imageUrls.toTypedArray())
+//                        .add(PicturePreviewActivity.PARAM_POSITION, position)
+//                )
+//            }
             .size(ImageHolder.MATCH_PARENT, dip(100))
             .into(tvPreview)
     }

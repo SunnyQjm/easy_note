@@ -99,7 +99,11 @@ dependencies {
     implementation 'com.github.SunnyQjm:TagView:1.4-beta'
 
     // ScrollPhotoView
-    implementation 'com.github.SunnyQjm:ScrollPhotoView:v1.2'
+    implementation 'com.github.SunnyQjm:ScrollPhotoView:1.2'
+
+    // RxAndroidAudio
+    implementation 'com.github.piasy:rxandroidaudio:1.6.0'
+    implementation 'com.github.piasy:AudioProcessor:1.6.0'
 
     implementation project(path: ':richtext1')
 }

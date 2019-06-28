@@ -2,9 +2,12 @@ package cn.yml.note.activity.main
 
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.yml.note.R
+import cn.yml.note.activity.picture_preview.PicturePreviewActivity
+import cn.yml.note.extensions.jumpTo
 import cn.yml.note.extensions.setDeleteAble
 import cn.yml.note.extensions.toYMD_HM
 import cn.yml.note.model.Note
+import cn.yml.note.model.params.IntentParam
 import cn.yml.note.views.BlankRecyclerView
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.BaseViewHolder
@@ -34,8 +37,12 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
                 adapter.bindToRecyclerView(imgRecyclerView)
 
                 // 点击图片
-                adapter.setOnItemClickListener { _, _, _ ->
-
+                adapter.setOnItemClickListener { _, view, position ->
+                    mContext.jumpTo(
+                        PicturePreviewActivity::class.java, IntentParam()
+                            .add(PicturePreviewActivity.PARAM_PICTURES, adapter.data.toTypedArray())
+                            .add(PicturePreviewActivity.PARAM_POSITION, position)
+                    )
                 }
             }
         }
