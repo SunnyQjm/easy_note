@@ -13,8 +13,10 @@ import android.widget.LinearLayout
 import androidx.core.view.marginTop
 import cn.yml.note.App
 import cn.yml.note.R
+import cn.yml.note.activity.picture_preview.PicturePreviewActivity
 import cn.yml.note.extensions.*
 import cn.yml.note.model.Note
+import cn.yml.note.model.params.IntentParam
 import cn.yml.note.model.toContentValues
 import cn.yml.note.utils.ContentUriUtil
 import cn.yml.note.utils.MyImagePicker
@@ -26,6 +28,8 @@ import com.zzhoujay.richtext.RichText
 import kotlinx.android.synthetic.main.activity_edit.*
 import kotlinx.android.synthetic.main.bar.*
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.zzhoujay.richtext.ImageHolder
+import com.zzhoujay.richtext.callback.OnImageClickListener
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.util.*
@@ -70,8 +74,7 @@ class EditActivity : AppCompatActivity() {
                 note = App.note!!
                 //            etCategory.setText(note.category)
                 etContent.setText(note.noteContent)
-                RichText.fromMarkdown(note.noteContent)
-                    .into(tvPreview)
+                renderRichText(note.noteContent)
                 tagView.addTags(note.tags)
                 tvTime.text = note.createTime.toYMD_HM()
             }
@@ -146,11 +149,6 @@ class EditActivity : AppCompatActivity() {
 
                                         }, {
                                             // onComplete
-//                                if(result.size <= 0) {
-//                                    valueCallback2?.onReceiveValue(null)
-//                                } else {
-//                                    valueCallback2?.onReceiveValue(result.toTypedArray())
-//                                }
                                         })
 
                                 }
@@ -240,33 +238,12 @@ class EditActivity : AppCompatActivity() {
 
                 // 根据便签内容用Markdown渲染组件渲染到预览视图当中
                 s?.let {
-                    RichText.fromMarkdown(it.toString())
-                        .into(tvPreview)
+                    renderRichText(it.toString())
                     note.noteContent = it.toString()
                 }
             }
 
         })
-
-//        etCategory.addTextChangedListener(object : TextWatcher {
-//            override fun afterTextChanged(s: Editable?) {
-//
-//            }
-//
-//            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-//            }
-//
-//            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-//                s?.let {
-//                    note.category = it.toString()
-//                }
-//            }
-//
-//        })
-
-        tvPreview.setOnClickListener {
-            //            changeMode(1)
-        }
 
 
         tagView.setOnTagDeleteListener { view, tag, position ->
@@ -346,5 +323,20 @@ class EditActivity : AppCompatActivity() {
                 tagView.setDeleteAble(false)
             }
         }
+    }
+
+
+    fun renderRichText(content: String) {
+        RichText.fromMarkdown(content)
+            .scaleType(ImageHolder.ScaleType.fit_center) // 图片缩放方式
+            .imageClick { imageUrls, position ->
+                jumpTo(
+                    PicturePreviewActivity::class.java, IntentParam()
+                        .add(PicturePreviewActivity.PARAM_PICTURES, imageUrls.toTypedArray())
+                        .add(PicturePreviewActivity.PARAM_POSITION, position)
+                )
+            }
+            .size(ImageHolder.MATCH_PARENT, dip(100))
+            .into(tvPreview)
     }
 }

@@ -3,19 +3,21 @@
           package="cn.yml.note">
 
     <uses-permission android:name="android.permission.INTERNET"/>
-
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application
+            android:name=".App"
             android:allowBackup="true"
             android:icon="@drawable/icon"
             android:label="@string/app_name"
             android:roundIcon="@drawable/icon"
             android:supportsRtl="true"
-            android:name=".App"
             android:theme="@style/AppTheme">
+        <activity android:name=".activity.picture_preview.PicturePreviewActivity">
+        </activity>
         <activity android:name=".activity.setting.SettingActivity">
         </activity>
         <activity android:name=".activity.preview.PreviewActivity">
@@ -37,9 +39,8 @@
                 android:grantUriPermissions="true">
             <meta-data
                     android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/provider_paths" /><!-- 对应xml文件夹下的provider_paths.xml -->
+                    android:resource="@xml/provider_paths"/> <!-- 对应xml文件夹下的provider_paths.xml -->
         </provider>
-
     </application>
 
 </manifest>

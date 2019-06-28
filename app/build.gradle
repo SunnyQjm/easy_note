@@ -98,5 +98,8 @@ dependencies {
     // TagView
     implementation 'com.github.SunnyQjm:TagView:1.4-beta'
 
+    // ScrollPhotoView
+    implementation 'com.github.SunnyQjm:ScrollPhotoView:v1.2'
+
     implementation project(path: ':richtext1')
 }
