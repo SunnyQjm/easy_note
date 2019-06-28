@@ -84,7 +84,13 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         getDataFromStorage()
+
+        // 如果设置开启了自动同步，则尝试自动同步
+        if(App.isAutoSyn) {
+            noteAdapter?.autoSyn()
+        }
     }
+
 
 
     private fun getDataFromStorage() {
