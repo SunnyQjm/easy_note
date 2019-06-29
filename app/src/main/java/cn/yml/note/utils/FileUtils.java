@@ -13,7 +13,6 @@ import java.io.File;
 public class FileUtils {
 
 
-
     /**
      * 获得应用的根目录
      *
@@ -33,8 +32,16 @@ public class FileUtils {
         return sdDir.toString();
     }
 
-    public static String getCachePath(){
+    public static String getCachePath() {
         String targetPath = getAppPath() + "/Cache/";
+        File file = new File(targetPath);
+        if (!file.exists())
+            file.mkdirs();
+        return targetPath;
+    }
+
+    public static String getRecordPath() {
+        String targetPath = getAppPath() + "/Record/";
         File file = new File(targetPath);
         if (!file.exists())
             file.mkdirs();

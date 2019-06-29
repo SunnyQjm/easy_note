@@ -10,6 +10,7 @@ import cn.bmob.v3.listener.UpdateListener
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.edit.EditActivity
+import cn.yml.note.activity.record.RecordActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.activity.setting.SettingActivity
 import cn.yml.note.extensions.jumpTo
@@ -49,13 +50,14 @@ class MainActivity : AppCompatActivity() {
 
     private fun initView() {
         imgEdit.setOnClickListener {
-            if(!synIngJudge())
+            if (!synIngJudge())
                 jumpTo(EditActivity::class.java)
         }
         imgSetting.setOnClickListener {
-            if(!synIngJudge())
+            if (!synIngJudge())
                 jumpTo(SettingActivity::class.java)
 //            jumpTo(RegisterLoginActivity::class.java)
+//            jumpTo(RecordActivity::class.java)
         }
 
         noteAdapter = NoteAdapter(mutableListOf())
@@ -64,7 +66,7 @@ class MainActivity : AppCompatActivity() {
 
         // 点击便签Item进入便签预览界面
         noteAdapter?.setOnItemClickListener { adapter, view, position ->
-            if(!synIngJudge()) {
+            if (!synIngJudge()) {
                 App.note = noteAdapter!!.getItem(position)
                 jumpTo(
                     EditActivity::class.java, IntentParam()
@@ -74,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         }
         noteAdapter?.onBlankAreaClick = object : NoteAdapter.OnBlankAreaClickListener {
             override fun onItemClick(adapter: NoteAdapter, item: Note) {
-                if(!synIngJudge()) {
+                if (!synIngJudge()) {
                     App.note = item
                     jumpTo(
                         EditActivity::class.java, IntentParam()
@@ -86,7 +88,7 @@ class MainActivity : AppCompatActivity() {
 
         // 长按删除
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
-            if(!synIngJudge()) {
+            if (!synIngJudge()) {
                 val item = noteAdapter!!.getItem(position)
                 alert(Appcompat, "", "确认要删除当前便签？") {
                     yesButton {
@@ -116,10 +118,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun autoSyn(forceSyn: Boolean = false) {
-        if(synIng)
+        if (synIng)
             return
-        if(!BmobUser.isLogin()) {
-            if(forceSyn) {          //忽略自动同步，手动同步时未登录则提示登录
+        if (!BmobUser.isLogin()) {
+            if (forceSyn) {          //忽略自动同步，手动同步时未登录则提示登录
                 imgRefresh.snackbar("请先登录", "点此登录", action = {
                     jumpTo(RegisterLoginActivity::class.java)
                 })
@@ -128,13 +130,15 @@ class MainActivity : AppCompatActivity() {
         }
         // 如果设置开启了自动同步，则尝试自动同步
         if (App.isAutoSyn || forceSyn) {
-            val animator = imgRefresh.rotate(0f, 360f, duration = 500,
+            val animator = imgRefresh.rotate(
+                0f, 360f, duration = 500,
                 repeatCount = -1,
-                repeatMode = ValueAnimator.INFINITE)
+                repeatMode = ValueAnimator.INFINITE
+            )
             noteAdapter?.autoSyn(this) {
                 animator.cancel()
-                if(it == null) {        // 自动同步成功
-                    if(forceSyn) {
+                if (it == null) {        // 自动同步成功
+                    if (forceSyn) {
                         imgRefresh.snackbar("同步成功")
                     }
                     getDataFromStorage()
@@ -146,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun synIngJudge(): Boolean {
-        if(synIng) {
+        if (synIng) {
             imgRefresh.snackbar("正在同步便签，请稍后重试")
         }
         return synIng
@@ -162,10 +166,17 @@ class MainActivity : AppCompatActivity() {
                         parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
                                               noteRecording: String, tags: String, createTime: Long, objectId: String ->
                             return@rowParser Note(
-                                id, noteTitle, noteContent, GsonUtil.json2Bean(noteImages),
-                                GsonUtil.json2Bean(noteRecording), GsonUtil.json2TagList(tags), createTime, objectId
+                                id,
+                                noteTitle,
+                                noteContent,
+                                GsonUtil.json2Bean(noteImages),
+                                GsonUtil.json2RecordList(noteRecording),
+                                GsonUtil.json2TagList(tags),
+                                createTime,
+                                objectId
                             )
                         })
+                    println(result.toJson())
                     noteAdapter?.data?.clear()
                     noteAdapter?.addData(result)
                 }

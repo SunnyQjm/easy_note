@@ -17,6 +17,13 @@ import com.cunoraz.tagview.Tag
 import kotlin.reflect.full.memberProperties
 
 
+data class Record(
+    val recordDuration: Int = 0,
+    val fileName: String = "",
+    val filePath: String = "",
+    var url: String = ""
+)
+
 /**
  * 本地Note对象
  */
@@ -25,7 +32,7 @@ data class Note(
     var noteTitle: String = "默认标题",                           // 便签标题
     var noteContent: String = "默认内容",                         // 便签内容
     var noteImages: MutableList<String> = mutableListOf(),      // 便签图片
-    var noteRecording: MutableList<String> = mutableListOf(),   // 录音
+    var noteRecording: MutableList<Record> = mutableListOf(),   // 录音
     var tags: MutableList<Tag> = mutableListOf(),            // 标签
     var createTime: Long = System.currentTimeMillis(),           // 创建时间
     var objectId: String = ""                                   // Bmob对象Id
@@ -36,7 +43,7 @@ data class NetworkNote(
     var noteTitle: String = "默认标题",                               // 便签标题
     var noteContent: String = "默认内容",                             // 便签内容
     var noteImages: MutableList<String> = mutableListOf(),        // 便签图片
-    var noteRecording: MutableList<BmobFile> = mutableListOf(),     // 录音
+    var noteRecording: MutableList<Record> = mutableListOf(),     // 录音
     var tags: MutableList<Tag> = mutableListOf(),                   // 标签
     var user: User? = null,                                         // 关联的用户
     var createTime: Long = System.currentTimeMillis()               // 创建时间
@@ -148,12 +155,24 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
         })
     }
 
-    val records = this.noteRecording.toTypedArray()
+    val records = this.noteRecording.map { it.filePath }.toTypedArray()
     if (records.isNotEmpty()) {
         BmobFile.uploadBatch(records, object : UploadBatchListener {
             override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                // 录音上传成功
-                networkNote.noteRecording = p0 ?: mutableListOf()
+                if (p0 != null && p0.size > 0) {
+                    // 录音上传成功
+                    networkNote.noteRecording = p0.map { bf ->
+                        val record = this@save.noteRecording.filter {
+                            it.fileName == bf.filename
+                        }[0]
+                        record.url = bf.fileUrl
+                        return@map Record(
+                            recordDuration = record.recordDuration,
+                            fileName = record.fileName,
+                            url = bf.fileUrl
+                        )
+                    }.toMutableList()
+                }
                 save()
             }
 
@@ -200,12 +219,23 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
         })
     }
 
-    val records = this.noteRecording.toTypedArray()
+    val records = this.noteRecording.filter { it.url.isEmpty() }.map { it.filePath }.toTypedArray()
     if (records.isNotEmpty()) {
         BmobFile.uploadBatch(records, object : UploadBatchListener {
             override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                // 录音上传成功
-                networkNote.noteRecording = p0 ?: mutableListOf()
+                if (p0 != null && p0.size > 0) {
+                    // 录音上传成功
+                    networkNote.noteRecording = p0.map { bf ->
+                        val record = this@update.noteRecording.filter {
+                            it.fileName == bf.filename
+                        }[0]
+                        return@map Record(
+                            recordDuration = record.recordDuration,
+                            fileName = record.fileName,
+                            url = bf.fileUrl
+                        )
+                    }.toMutableList()
+                }
                 save()
             }
 

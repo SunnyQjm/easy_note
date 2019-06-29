@@ -1,5 +1,6 @@
 package cn.yml.note.utils;
 
+import cn.yml.note.model.Record;
 import com.cunoraz.tagview.Tag;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -45,6 +46,17 @@ public class GsonUtil {
     public static ArrayList<Tag> json2TagList(String json) {
         Type type = new TypeToken<ArrayList<Tag>>(){}.getType();
         ArrayList<Tag> bean = new ArrayList<>();
+        try {
+            bean = getInstance().fromJson(json, type);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+        }
+        return bean;
+    }
+
+    public static ArrayList<Record> json2RecordList(String json) {
+        Type type = new TypeToken<ArrayList<Record>>(){}.getType();
+        ArrayList<Record> bean = new ArrayList<>();
         try {
             bean = getInstance().fromJson(json, type);
         } catch (JsonSyntaxException e) {

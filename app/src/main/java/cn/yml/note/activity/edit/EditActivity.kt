@@ -3,7 +3,6 @@ package cn.yml.note.activity.edit
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.media.AudioRecord
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -11,10 +10,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.marginTop
-import cn.bmob.v3.BmobUser
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.SaveListener
@@ -25,13 +21,12 @@ import cn.yml.note.R
 import cn.yml.note.activity.picture_preview.PicturePreviewActivity
 import cn.yml.note.extensions.*
 import cn.yml.note.model.Note
+import cn.yml.note.model.Record
 import cn.yml.note.model.params.IntentParam
 import cn.yml.note.model.save
-import cn.yml.note.model.toContentValues
 import cn.yml.note.model.update
 import cn.yml.note.utils.ContentUriUtil
 import cn.yml.note.utils.MyImagePicker
-import cn.yml.note.utils.database
 import com.github.piasy.rxandroidaudio.AudioRecorder
 import com.qingmei2.rximagepicker.core.RxImagePicker
 import com.qingmei2.rximagepicker_extension.MimeType
@@ -41,14 +36,13 @@ import kotlinx.android.synthetic.main.activity_edit.*
 import kotlinx.android.synthetic.main.bar.*
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.zzhoujay.richtext.ImageHolder
-import com.zzhoujay.richtext.callback.OnImageClickListener
-import com.zzhoujay.richtext.callback.OnImageLongClickListener
+import com.zzhoujay.richtext.callback.OnUrlClickListener
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import org.jetbrains.anko.*
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.io.File
-import java.net.URI
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -67,6 +61,7 @@ class EditActivity : AppCompatActivity() {
     private lateinit var tagDialog: DialogInterface
     private lateinit var recordDialog: DialogInterface
     private lateinit var recordTime: TextView
+    private lateinit var recordFile: File
     private var hidePosition: Float = 2000f
 
 
@@ -81,6 +76,8 @@ class EditActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_edit)
 
+        RichText.initCacheDir(this)
+        RichText.debugMode = true
         initView()
     }
 
@@ -187,59 +184,7 @@ class EditActivity : AppCompatActivity() {
         // 添加录音
         llAddSoundRecord.setOnClickListener {
             llAddSoundRecord.scaleXY(1f, 1.2f, 1f)
-            recordDialog = alert {
-                customView {
-                    verticalLayout {
-                        padding = dip(10)
-                        textView("正在录音") {
-                            gravity = Gravity.CENTER
-                            textSize = 18f
-                        }.lparams {
-                            gravity = Gravity.CENTER
-                            width = wrapContent
-                            height = wrapContent
-                            topMargin = dip(10)
-                        }
-
-                        recordTime = textView("00:00") {
-                            gravity = Gravity.CENTER
-                            textSize = 16f
-                        }.lparams {
-                            gravity = Gravity.CENTER
-                            width = wrapContent
-                            height = wrapContent
-                            topMargin = dip(10)
-                        }
-
-                        button("结束录音") {
-                            onClick {
-                                AudioRecorder.getInstance()
-                                    .stopRecord()
-                                recordDialog.dismiss()
-                            }
-                        }.lparams {
-                            topMargin = dip(10)
-                            gravity = Gravity.CENTER
-                        }
-
-                    }
-                }
-            }.show()
-
-            // 开始录音
-            AudioRecorder.getInstance()
-                .easyStartRecord()
-
-            Observable.interval(1000, TimeUnit.MILLISECONDS)
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    llAddSoundRecord.post {
-                        val progress = AudioRecorder.getInstance().progress()
-                        val second = progress.rem(60)
-                        val minutes = progress / 60
-                        recordTime.text = "$minutes : $second"
-                    }
-                }
+            insertRecord()
         }
 
         // 预览便签
@@ -331,10 +276,24 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * 不够位数的在前面补0，保留num的长度位数字
+     * @param code
+     * @return
+     */
+    private fun autoGenericCode(code: String, num: Int): String {
+        return String.format("%0" + num + "d", Integer.parseInt(code))
+    }
+
     override fun onBackPressed() {
+        val dialog = indeterminateProgressDialog("正在保存") {
+
+        }
         // 返回的时候先保存便签
-        saveNote()
-        super.onBackPressed()
+        saveNote {
+            dialog.dismiss()
+            super.onBackPressed()
+        }
     }
 
 
@@ -375,13 +334,115 @@ class EditActivity : AppCompatActivity() {
     }
 
     /**
+     * 在当前光标位置插入一个录音链接
+     */
+    @SuppressLint("SetTextI18n")
+    fun insertRecord() {
+        recordDialog = alert {
+            customView {
+                verticalLayout {
+                    padding = dip(10)
+                    textView("插入录音") {
+                        gravity = Gravity.CENTER
+                        textSize = 18f
+                    }.lparams {
+                        gravity = Gravity.CENTER
+                        width = wrapContent
+                        height = wrapContent
+                        topMargin = dip(10)
+                    }
+
+                    recordTime = textView("00:00") {
+                        gravity = Gravity.CENTER
+                        textSize = 16f
+                    }.lparams {
+                        gravity = Gravity.CENTER
+                        width = wrapContent
+                        height = wrapContent
+                        topMargin = dip(10)
+                    }
+                    recordTime.visibility = View.GONE
+
+                    val et = editText() {
+                    }.lparams {
+                        topMargin = dip(10)
+                        width = matchParent
+                        height = wrapContent
+                        gravity = Gravity.CENTER
+                    }
+                    et.hint = "在此输入录音名称"
+
+                    var disposable: Disposable? = null
+                    button("开始录音") {
+                        onClick {
+                            if (this@button.text == "开始录音") {
+                                et.visibility = View.GONE
+                                recordTime.visibility = View.VISIBLE
+                                this@button.text = "结束录音"
+                                // 开始录音
+                                AudioRecorder.getInstance()
+                                    .easyStartRecord { file, fp ->
+                                        recordFile = file
+                                    }
+
+                                disposable = Observable.interval(1000, TimeUnit.MILLISECONDS)
+                                    .subscribeOn(AndroidSchedulers.mainThread())
+                                    .subscribe {
+                                        llAddSoundRecord.post {
+                                            val progress = AudioRecorder.getInstance().progress()
+                                            val second = progress.rem(60)
+                                            val minutes = progress / 60
+                                            println("($minutes, $second)")
+                                            recordTime.text =
+                                                "${autoGenericCode(
+                                                    minutes.toString(),
+                                                    2
+                                                )} : ${autoGenericCode(second.toString(), 2)}"
+                                        }
+                                    }
+                            } else {
+                                disposable?.dispose()
+                                val progress = AudioRecorder.getInstance().progress()
+                                AudioRecorder.getInstance()
+                                    .stopRecord()
+                                note.noteRecording.add(
+                                    Record(
+                                        progress,
+                                        recordFile.name,
+                                        recordFile.absolutePath
+                                    )
+                                )
+                                val index = etContent.selectionStart
+                                val insertText = "\n[${et.text}](${recordFile.name})\n"
+                                val editable = etContent.editableText
+                                if (index < 0 || index >= editable.length) {
+                                    editable.append(insertText)
+                                } else {
+                                    editable.insert(index, insertText)
+                                }
+                                recordDialog.dismiss()
+                            }
+
+                        }
+                    }.lparams {
+                        topMargin = dip(10)
+                        gravity = Gravity.CENTER
+                    }
+
+                }
+            }
+        }.show()
+    }
+
+    /**
      * 保存note
      */
-    fun saveNote() {
+    fun saveNote(finishCallback: () -> Unit = {}) {
         if (note.id.isEmpty()) {         // 新建的便签，则插入到数据库中
             note.id = UUID.randomUUID().toString()
             note.save(object : SaveListener<String>() {
                 override fun done(p0: String?, p1: BmobException?) {
+                    finishCallback()
                     if (p1 == null) {
 //                        toast("保存成功")
                     } else {
@@ -393,6 +454,7 @@ class EditActivity : AppCompatActivity() {
             note.createTime = System.currentTimeMillis()
             note.update(object : UpdateListener() {
                 override fun done(p0: BmobException?) {
+                    finishCallback()
                     if (p0 == null) {        // 更新成功
 //                        toast("更新成功")
                     } else {
@@ -443,13 +505,25 @@ class EditActivity : AppCompatActivity() {
 //
 //                return@OnImageLongClickListener true
 //            })
-//            .imageClick { imageUrls, position ->
-//                jumpTo(
-//                    PicturePreviewActivity::class.java, IntentParam()
-//                        .add(PicturePreviewActivity.PARAM_PICTURES, imageUrls.toTypedArray())
-//                        .add(PicturePreviewActivity.PARAM_POSITION, position)
-//                )
-//            }
+            .imageClick { imageUrls, position ->
+                jumpTo(
+                    PicturePreviewActivity::class.java, IntentParam()
+                        .add(PicturePreviewActivity.PARAM_PICTURES, imageUrls.toTypedArray())
+                        .add(PicturePreviewActivity.PARAM_POSITION, position)
+                )
+            }
+            .urlClick(object : OnUrlClickListener {
+                override fun urlClicked(url: String?): Boolean {
+                    url?.let { name ->
+                        val recording = note.noteRecording.filter { it.fileName == name }
+                        if(recording.isNotEmpty()) {
+                            playRecord(recording.first())
+                        }
+                    }
+                    return true
+                }
+
+            })
             .size(ImageHolder.MATCH_PARENT, dip(100))
             .into(tvPreview)
     }
