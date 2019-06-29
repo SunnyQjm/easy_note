@@ -72,6 +72,7 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                 override fun done(p0: MutableList<NetworkNote>?, p1: BmobException?) {
                     if (p1 == null) {
                         if (p0 != null) {
+                            println("服务器返回的数据: ${p0?.toJson()}")
                             val netIds = p0.map {
                                 return@map it.id
                             }
@@ -95,27 +96,42 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                             }
 
 
+                            var isCallCallback = false
                             var alreadyUpload = 0
+                            var alreadyDownload = 0
                             // 处理需要上传的便签
                             needUpload.forEach {
+                                println("处理上传")
                                 it.save(object : SaveListener<String>() {
                                     override fun done(p0: String?, p1: BmobException?) {
                                         alreadyUpload++
-                                        if (alreadyUpload == needUpload.size)
-                                            finishCallback(p1)
+                                        if (!isCallCallback && alreadyUpload == needUpload.size
+                                            && alreadyDownload == needDownload.size) {
+                                            finishCallback(null)
+                                            isCallCallback = true
+                                        }
                                     }
                                 }, context, false)
                             }
 
                             // 处理需要从云端同步到本地的便签
                             needDownload.forEach {
-                                it.saveToLocal(context)
+                                println("处理下载")
+                                it.saveToLocal(context) {
+                                    alreadyDownload++
+                                    if (!isCallCallback && alreadyUpload == needUpload.size
+                                        && alreadyDownload == needDownload.size) {
+                                        finishCallback(null)
+                                        isCallCallback = true
+                                    }
+                                }
                             }
-                            if(needUpload.isEmpty()) {
+                            if (!isCallCallback && alreadyUpload == needUpload.size
+                                && alreadyDownload == needDownload.size) {
                                 finishCallback(null)
+                                isCallCallback = true
                             }
                         }
-                        println(p0?.toJson() ?: "")
                     } else {
                         context.toast("自动同步失败")
                     }

@@ -3,6 +3,7 @@ package cn.yml.note.activity.register_login
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import cn.bmob.v3.BmobSMS
 import cn.bmob.v3.BmobUser
@@ -60,6 +61,7 @@ class RegisterLoginActivity : AppCompatActivity() {
                             }
                         } else {
                             tvSendCode.snackbar(R.string.send_vertify_code_fail)
+                            Log.e("发送验证码", e.message ?: "发送验证码失败")
                         }
                     }
 

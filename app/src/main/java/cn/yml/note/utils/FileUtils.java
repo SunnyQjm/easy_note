@@ -48,6 +48,10 @@ public class FileUtils {
         return targetPath;
     }
 
+    public static File generateRecordFile(String fileName) {
+        return new File(getRecordPath() + File.separator + fileName);
+    }
+
     public static String getDownloadPath() {
         String targetPath = getAppPath() + "/Download/";
         File file = new File(targetPath);

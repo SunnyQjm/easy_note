@@ -7,20 +7,19 @@ import cn.bmob.v3.BmobObject
 import cn.bmob.v3.BmobUser
 import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
-import cn.bmob.v3.listener.BmobUpdateListener
-import cn.bmob.v3.listener.SaveListener
-import cn.bmob.v3.listener.UpdateListener
-import cn.bmob.v3.listener.UploadBatchListener
+import cn.bmob.v3.listener.*
 import cn.yml.note.extensions.toJson
+import cn.yml.note.utils.FileUtils
 import cn.yml.note.utils.database
 import com.cunoraz.tagview.Tag
+import java.io.File
 import kotlin.reflect.full.memberProperties
 
 
 data class Record(
     val recordDuration: Int = 0,
     val fileName: String = "",
-    val filePath: String = "",
+    var filePath: String = "",
     var url: String = ""
 )
 
@@ -50,7 +49,7 @@ data class NetworkNote(
 ) : BmobObject()
 
 
-fun NetworkNote.saveToLocal(context: Context) {
+fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
     val note = Note(
         id = this.id,
         objectId = this.objectId,
@@ -58,13 +57,46 @@ fun NetworkNote.saveToLocal(context: Context) {
         noteContent = this.noteContent,
         noteImages = this.noteImages,
         createTime = this.createTime,
-        tags = this.tags
-//        noteRecording = this.noteRecording.map {  }
+        tags = this.tags,
+        noteRecording = this.noteRecording
     )
-    note.saveLocal(context)
+
+    println("正在同步: ${this.toJson()}")
+    var needDownloadCount = note.noteRecording.size
+    if (needDownloadCount == 0) {
+        note.saveLocal(context)
+        finishCallback()
+        return
+    }
+    // 将远程的录音下载到本地
+    note.noteRecording.forEach { record ->
+        println("do download File: ${record.toJson()}")
+        BmobFile(record.fileName, "", record.url)
+            .download(FileUtils.generateRecordFile(record.fileName), object : DownloadFileListener() {
+                override fun done(savePath: String?, p1: BmobException?) {
+                    if (p1 == null) {
+                        record.filePath = savePath ?: ""
+                    } else {
+                        Log.e("NetworkNote.saveToLocal", "下载失败: ${record.toJson()}")
+                    }
+                    needDownloadCount--
+                    if (needDownloadCount == 0) {
+                        note.saveLocal(context)
+                        finishCallback()
+                    }
+
+                }
+
+                override fun onProgress(p0: Int?, p1: Long) {
+
+                }
+
+            })
+    }
 }
 
 fun Note.saveLocal(context: Context, finish: () -> Unit = {}) {
+    println("do saveLocal: ${this.toString()}")
     context.database.use {
         insert(
             "note",
@@ -76,6 +108,8 @@ fun Note.saveLocal(context: Context, finish: () -> Unit = {}) {
 }
 
 fun Note.updateLocal(context: Context, finish: () -> Unit = {}) {
+    println("do updateLocal: ${this.toString()}")
+
     context.database.use {
         update("note", this@updateLocal.toContentValues(), "id = ?", arrayOf(this@updateLocal.id))
         finish()
@@ -83,6 +117,8 @@ fun Note.updateLocal(context: Context, finish: () -> Unit = {}) {
 }
 
 fun Note.deleteLocal(context: Context, finish: () -> Unit = {}) {
+    println("do deleteLocal: ${this.toString()}")
+
     context.database.use {
         delete(
             "note",
@@ -93,6 +129,7 @@ fun Note.deleteLocal(context: Context, finish: () -> Unit = {}) {
 }
 
 fun Note.delete(updateListener: UpdateListener, context: Context) {
+    println("do delete: ${this.toString()}")
     if (!BmobUser.isLogin() || this.objectId.isEmpty()) {
         deleteLocal(context)
         updateListener.done(null)
@@ -120,6 +157,7 @@ fun Note.delete(updateListener: UpdateListener, context: Context) {
  * 保存
  */
 fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLocalStorage: Boolean = true) {
+    println("do save: ${this.toJson()}")
     val networkNote = NetworkNote(
         id = this.id,
         noteTitle = this.noteTitle,
@@ -190,6 +228,7 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
 }
 
 fun Note.update(updateListener: UpdateListener, context: Context) {
+    println("do update: ${this.toJson()}")
     val networkNote = NetworkNote(
         id = this.id,
         noteTitle = this.noteTitle,
@@ -223,9 +262,8 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
     if (records.isNotEmpty()) {
         BmobFile.uploadBatch(records, object : UploadBatchListener {
             override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                if (p0 != null && p0.size > 0) {
-                    // 录音上传成功
-                    networkNote.noteRecording = p0.map { bf ->
+                if (p0 != null) {
+                    val newRecords: MutableList<Record> = p0.map { bf ->
                         val record = this@update.noteRecording.filter {
                             it.fileName == bf.filename
                         }[0]
@@ -235,6 +273,9 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
                             url = bf.fileUrl
                         )
                     }.toMutableList()
+                    newRecords.addAll(this@update.noteRecording.filter { it.url.isNotEmpty() })
+                    // 录音上传成功
+                    networkNote.noteRecording = newRecords
                 }
                 save()
             }
@@ -248,6 +289,7 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
 
         })
     } else {
+        networkNote.noteRecording = this.noteRecording
         save()
     }
 }
