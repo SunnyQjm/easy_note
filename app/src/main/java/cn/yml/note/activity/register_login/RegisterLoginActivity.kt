@@ -11,6 +11,7 @@ import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.LogInListener
 import cn.bmob.v3.listener.QueryListener
 import cn.yml.note.R
+import cn.yml.note.extensions.hideSoftKeyboard
 import cn.yml.note.extensions.setStyleText
 import cn.yml.note.model.User
 import cn.yml.note.utils.AccountValidatorUtil
@@ -38,6 +39,7 @@ class RegisterLoginActivity : AppCompatActivity() {
         tvRight.visibility = View.GONE
 
         tvSendCode.setOnClickListener {
+            hideSoftKeyboard(tvSendCode)
             //发送验证码回调
             val phone = etPhone.text.toString()
             if (AccountValidatorUtil.isMobile(phone)) {      //发送验证码
@@ -73,6 +75,7 @@ class RegisterLoginActivity : AppCompatActivity() {
 
         // 登录
         btnLogin.setOnClickListener {
+            hideSoftKeyboard(btnLogin)
             val phone = etPhone.text.toString()
             val vertifyCode = etCode.text.toString()
             if (!AccountValidatorUtil.isMobile(phone)) {

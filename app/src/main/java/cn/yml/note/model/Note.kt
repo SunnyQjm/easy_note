@@ -232,68 +232,72 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
     var needUploadCount = records.size + images.size
     if (needUploadCount > 0) {
 
-        // 批量上传录音
-        BmobFile.uploadBatch(records.toTypedArray(), object : UploadBatchListener {
-            override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                if (p0 != null && p0.size > 0) {
-                    // 录音上传成功
-                    networkNote.noteRecording = p0.map { bf ->
-                        val record = this@save.noteRecording.filter {
-                            it.fileName == bf.filename
-                        }[0]
-                        record.url = bf.fileUrl
-                        return@map Record(
-                            recordDuration = record.recordDuration,
-                            fileName = record.fileName,
-                            url = bf.fileUrl
-                        )
-                    }.toMutableList()
+        if(records.isNotEmpty()) {
+            // 批量上传录音
+            BmobFile.uploadBatch(records.toTypedArray(), object : UploadBatchListener {
+                override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
+                    if (p0 != null && p0.size > 0) {
+                        // 录音上传成功
+                        networkNote.noteRecording = p0.map { bf ->
+                            val record = this@save.noteRecording.filter {
+                                it.fileName == bf.filename
+                            }[0]
+                            record.url = bf.fileUrl
+                            return@map Record(
+                                recordDuration = record.recordDuration,
+                                fileName = record.fileName,
+                                url = bf.fileUrl
+                            )
+                        }.toMutableList()
+                    }
+                    needUploadCount--
+                    if(needUploadCount == 0) {
+                        save()
+                    }
                 }
-                needUploadCount--
-                if(needUploadCount == 0) {
-                    save()
+
+                override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
                 }
-            }
 
-            override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
-            }
-
-            override fun onError(p0: Int, p1: String?) {
-                saveListener.done("", BmobException(p1 ?: "上传录音失败"))
-            }
-
-        })
-
-        // 批量上传图片
-        BmobFile.uploadBatch(images.toTypedArray(), object : UploadBatchListener {
-            override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                if (p0 != null && p0.size > 0) {
-                    // 录音上传成功
-                    networkNote.noteImages = p0.map { bf ->
-                        val record = this@save.noteImages.filter {
-                            it.fileName == bf.filename
-                        }[0]
-                        record.url = bf.fileUrl
-                        return@map Image(
-                            fileName = record.fileName,
-                            url = bf.fileUrl
-                        )
-                    }.toMutableList()
+                override fun onError(p0: Int, p1: String?) {
+                    saveListener.done("", BmobException(p1 ?: "上传录音失败"))
                 }
-                needUploadCount--
-                if(needUploadCount == 0) {
-                    save()
+
+            })
+        }
+
+        if(images.isNotEmpty()) {
+            // 批量上传图片
+            BmobFile.uploadBatch(images.toTypedArray(), object : UploadBatchListener {
+                override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
+                    if (p0 != null && p0.size > 0) {
+                        // 录音上传成功
+                        networkNote.noteImages = p0.map { bf ->
+                            val record = this@save.noteImages.filter {
+                                it.fileName == bf.filename
+                            }[0]
+                            record.url = bf.fileUrl
+                            return@map Image(
+                                fileName = record.fileName,
+                                url = bf.fileUrl
+                            )
+                        }.toMutableList()
+                    }
+                    needUploadCount--
+                    if(needUploadCount == 0) {
+                        save()
+                    }
                 }
-            }
 
-            override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
-            }
+                override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
+                }
 
-            override fun onError(p0: Int, p1: String?) {
-                saveListener.done("", BmobException(p1 ?: "上传图片失败"))
-            }
+                override fun onError(p0: Int, p1: String?) {
+                    saveListener.done("", BmobException(p1 ?: "上传图片失败"))
+                }
 
-        })
+            })
+        }
     } else {
         save()
     }

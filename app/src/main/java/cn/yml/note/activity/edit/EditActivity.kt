@@ -114,6 +114,7 @@ class EditActivity : AppCompatActivity() {
         changeMode(mode)
 
         tvRight.setOnClickListener {
+            hideSoftKeyboard(tvRight)
             saveNote()
             when (mode) {
                 0, 2 -> {
@@ -129,6 +130,7 @@ class EditActivity : AppCompatActivity() {
 
         // 添加图片
         llAddPicture.setOnClickListener {
+            hideSoftKeyboard(llAddPicture)
             llAddPicture.scaleXY(1f, 1.2f, 1f)
 
             // 先获取相机权限和读取手机相册的权限
@@ -198,6 +200,7 @@ class EditActivity : AppCompatActivity() {
 
         // 预览便签
         llPreview.setOnClickListener {
+            hideSoftKeyboard(llPreview)
             llPreview.scaleXY(1f, 1.2f, 1f)
             when (mode) {
                 0 -> {
@@ -220,6 +223,7 @@ class EditActivity : AppCompatActivity() {
 
         // 添加标签
         llAddTag.setOnClickListener {
+            hideSoftKeyboard(llAddTag)
             llAddTag.scaleXY(1f, 1.2f, 1f)
             tagDialog = alert {
                 customView {
@@ -382,11 +386,13 @@ class EditActivity : AppCompatActivity() {
                         gravity = Gravity.CENTER
                     }
                     et.hint = "在此输入录音名称"
+                    showSoftKeyboard(et)
 
                     var disposable: Disposable? = null
                     button("开始录音") {
                         onClick {
                             if (this@button.text == "开始录音") {
+                                hideSoftKeyboard(et)
                                 et.visibility = View.GONE
                                 recordTime.visibility = View.VISIBLE
                                 this@button.text = "结束录音"
