@@ -12,12 +12,17 @@ import cn.yml.note.extensions.toJson
 import cn.yml.note.utils.FileUtils
 import cn.yml.note.utils.database
 import com.cunoraz.tagview.Tag
-import java.io.File
 import kotlin.reflect.full.memberProperties
 
 
 data class Record(
     val recordDuration: Int = 0,
+    val fileName: String = "",
+    var filePath: String = "",
+    var url: String = ""
+)
+
+data class Image(
     val fileName: String = "",
     var filePath: String = "",
     var url: String = ""
@@ -30,7 +35,7 @@ data class Note(
     var id: String = "",
     var noteTitle: String = "默认标题",                           // 便签标题
     var noteContent: String = "默认内容",                         // 便签内容
-    var noteImages: MutableList<String> = mutableListOf(),      // 便签图片
+    var noteImages: MutableList<Image> = mutableListOf(),      // 便签图片
     var noteRecording: MutableList<Record> = mutableListOf(),   // 录音
     var tags: MutableList<Tag> = mutableListOf(),            // 标签
     var createTime: Long = System.currentTimeMillis(),           // 创建时间
@@ -41,7 +46,7 @@ data class NetworkNote(
     var id: String = "",
     var noteTitle: String = "默认标题",                               // 便签标题
     var noteContent: String = "默认内容",                             // 便签内容
-    var noteImages: MutableList<String> = mutableListOf(),        // 便签图片
+    var noteImages: MutableList<Image> = mutableListOf(),        // 便签图片
     var noteRecording: MutableList<Record> = mutableListOf(),     // 录音
     var tags: MutableList<Tag> = mutableListOf(),                   // 标签
     var user: User? = null,                                         // 关联的用户
@@ -62,12 +67,14 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
     )
 
     println("正在同步: ${this.toJson()}")
-    var needDownloadCount = note.noteRecording.size
+    var needDownloadCount = note.noteRecording.size + note.noteImages.size
     if (needDownloadCount == 0) {
         note.saveLocal(context)
         finishCallback()
         return
     }
+
+
     // 将远程的录音下载到本地
     note.noteRecording.forEach { record ->
         println("do download File: ${record.toJson()}")
@@ -78,6 +85,32 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
                         record.filePath = savePath ?: ""
                     } else {
                         Log.e("NetworkNote.saveToLocal", "下载失败: ${record.toJson()}")
+                    }
+                    needDownloadCount--
+                    if (needDownloadCount == 0) {
+                        note.saveLocal(context)
+                        finishCallback()
+                    }
+
+                }
+
+                override fun onProgress(p0: Int?, p1: Long) {
+
+                }
+
+            })
+    }
+
+    // 将远程的图片下载到本地
+    note.noteImages.forEach { image ->
+        println("do download File: ${image.toJson()}")
+        BmobFile(image.fileName, "", image.url)
+            .download(FileUtils.generatePictureFile(image.fileName), object : DownloadFileListener() {
+                override fun done(savePath: String?, p1: BmobException?) {
+                    if (p1 == null) {
+                        image.filePath = savePath ?: ""
+                    } else {
+                        Log.e("NetworkNote.saveToLocal", "下载失败: ${image.toJson()}")
                     }
                     needDownloadCount--
                     if (needDownloadCount == 0) {
@@ -108,7 +141,7 @@ fun Note.saveLocal(context: Context, finish: () -> Unit = {}) {
 }
 
 fun Note.updateLocal(context: Context, finish: () -> Unit = {}) {
-    println("do updateLocal: ${this.toString()}")
+    println("do updateLocal: ${this}")
 
     context.database.use {
         update("note", this@updateLocal.toContentValues(), "id = ?", arrayOf(this@updateLocal.id))
@@ -193,9 +226,14 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
         })
     }
 
-    val records = this.noteRecording.map { it.filePath }.toTypedArray()
-    if (records.isNotEmpty()) {
-        BmobFile.uploadBatch(records, object : UploadBatchListener {
+
+    val records = this.noteRecording.map { it.filePath }
+    val images = this.noteImages.map { it.filePath }
+    var needUploadCount = records.size + images.size
+    if (needUploadCount > 0) {
+
+        // 批量上传录音
+        BmobFile.uploadBatch(records.toTypedArray(), object : UploadBatchListener {
             override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
                 if (p0 != null && p0.size > 0) {
                     // 录音上传成功
@@ -211,7 +249,10 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
                         )
                     }.toMutableList()
                 }
-                save()
+                needUploadCount--
+                if(needUploadCount == 0) {
+                    save()
+                }
             }
 
             override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
@@ -222,6 +263,37 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
             }
 
         })
+
+        // 批量上传图片
+        BmobFile.uploadBatch(images.toTypedArray(), object : UploadBatchListener {
+            override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
+                if (p0 != null && p0.size > 0) {
+                    // 录音上传成功
+                    networkNote.noteImages = p0.map { bf ->
+                        val record = this@save.noteImages.filter {
+                            it.fileName == bf.filename
+                        }[0]
+                        record.url = bf.fileUrl
+                        return@map Image(
+                            fileName = record.fileName,
+                            url = bf.fileUrl
+                        )
+                    }.toMutableList()
+                }
+                needUploadCount--
+                if(needUploadCount == 0) {
+                    save()
+                }
+            }
+
+            override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onError(p0: Int, p1: String?) {
+                saveListener.done("", BmobException(p1 ?: "上传图片失败"))
+            }
+
+        })
     } else {
         save()
     }
@@ -229,6 +301,13 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
 
 fun Note.update(updateListener: UpdateListener, context: Context) {
     println("do update: ${this.toJson()}")
+
+    if (!BmobUser.isLogin() || this.objectId.isEmpty()) {
+        updateListener.done(null)
+        updateLocal(context)
+        return
+    }
+
     val networkNote = NetworkNote(
         id = this.id,
         noteTitle = this.noteTitle,
@@ -238,11 +317,6 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
         createTime = this.createTime
     )
     networkNote.objectId = this.objectId
-    if (!BmobUser.isLogin() || this.objectId.isEmpty()) {
-        updateListener.done(null)
-        updateLocal(context)
-        return
-    }
 
     networkNote.user = BmobUser.getCurrentUser(User::class.java)
 
@@ -251,6 +325,8 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
             override fun done(p0: BmobException?) {
                 if (p0 == null) {
                     updateLocal(context)
+                } else {
+                    Log.e("networkNote.update", p0.message)
                 }
                 updateListener.done(p0)
             }
@@ -259,37 +335,81 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
     }
 
     val records = this.noteRecording.filter { it.url.isEmpty() }.map { it.filePath }.toTypedArray()
-    if (records.isNotEmpty()) {
-        BmobFile.uploadBatch(records, object : UploadBatchListener {
-            override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
-                if (p0 != null) {
-                    val newRecords: MutableList<Record> = p0.map { bf ->
-                        val record = this@update.noteRecording.filter {
-                            it.fileName == bf.filename
-                        }[0]
-                        return@map Record(
-                            recordDuration = record.recordDuration,
-                            fileName = record.fileName,
-                            url = bf.fileUrl
-                        )
-                    }.toMutableList()
-                    newRecords.addAll(this@update.noteRecording.filter { it.url.isNotEmpty() })
-                    // 录音上传成功
-                    networkNote.noteRecording = newRecords
+    val images = this.noteImages.filter { it.url.isEmpty() }.map { it.filePath }.toTypedArray()
+
+    var needUploadCount = records.size + images.size
+    if (needUploadCount > 0) {
+        // 上传录音
+        if(records.isNotEmpty()) {
+            BmobFile.uploadBatch(records, object : UploadBatchListener {
+                override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
+                    if (p0 != null) {
+                        val newRecords: MutableList<Record> = p0.map { bf ->
+                            val record = this@update.noteRecording.filter {
+                                it.fileName == bf.filename
+                            }[0]
+                            return@map Record(
+                                recordDuration = record.recordDuration,
+                                fileName = record.fileName,
+                                url = bf.fileUrl
+                            )
+                        }.toMutableList()
+                        newRecords.addAll(this@update.noteRecording.filter { it.url.isNotEmpty() })
+                        // 录音上传成功
+                        networkNote.noteRecording = newRecords
+                    }
+                    needUploadCount--
+                    if(needUploadCount == 0) {
+                        save()
+                    }
                 }
-                save()
-            }
 
-            override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
-            }
+                override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
+                }
 
-            override fun onError(p0: Int, p1: String?) {
-                updateListener.done(BmobException(p1 ?: "上传录音失败"))
-            }
+                override fun onError(p0: Int, p1: String?) {
+                    updateListener.done(BmobException(p1 ?: "上传录音失败"))
+                }
 
-        })
+            })
+        }
+
+        if(images.isNotEmpty()) {
+            // 上传图片
+            BmobFile.uploadBatch(images, object : UploadBatchListener {
+                override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
+                    if (p0 != null) {
+                        val newImages: MutableList<Image> = p0.map { bf ->
+                            val record = this@update.noteRecording.filter {
+                                it.fileName == bf.filename
+                            }[0]
+                            return@map Image(
+                                fileName = record.fileName,
+                                url = bf.fileUrl
+                            )
+                        }.toMutableList()
+                        newImages.addAll(this@update.noteImages.filter { it.url.isNotEmpty() })
+                        // 录音上传成功
+                        networkNote.noteImages = newImages
+                    }
+                    needUploadCount--
+                    if(needUploadCount == 0) {
+                        save()
+                    }
+                }
+
+                override fun onProgress(p0: Int, p1: Int, p2: Int, p3: Int) {
+                }
+
+                override fun onError(p0: Int, p1: String?) {
+                    updateListener.done(BmobException(p1 ?: "上传录音失败"))
+                }
+
+            })
+        }
     } else {
         networkNote.noteRecording = this.noteRecording
+        networkNote.noteImages = this.noteImages
         save()
     }
 }

@@ -52,6 +52,18 @@ public class FileUtils {
         return new File(getRecordPath() + File.separator + fileName);
     }
 
+    public static String getPicturePath() {
+        String targetPath = getAppPath() + "/Picture/";
+        File file = new File(targetPath);
+        if (!file.exists())
+            file.mkdirs();
+        return targetPath;
+    }
+
+    public static File generatePictureFile(String fileName) {
+        return new File(getPicturePath() + File.separator + fileName);
+    }
+
     public static String getDownloadPath() {
         String targetPath = getAppPath() + "/Download/";
         File file = new File(targetPath);

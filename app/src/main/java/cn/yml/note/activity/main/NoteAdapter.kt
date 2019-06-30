@@ -44,16 +44,12 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
                 adapter.setOnItemClickListener { _, view, position ->
                     mContext.jumpTo(
                         PicturePreviewActivity::class.java, IntentParam()
-                            .add(PicturePreviewActivity.PARAM_PICTURES, adapter.data.toTypedArray())
+                            .add(PicturePreviewActivity.PARAM_PICTURES, adapter.data.map { it.filePath }.toTypedArray())
                             .add(PicturePreviewActivity.PARAM_POSITION, position)
                     )
                 }
             }
         }
-    }
-
-    fun getContext(): Context? {
-        return mContext
     }
 
     interface OnBlankAreaClickListener {
@@ -72,7 +68,7 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                 override fun done(p0: MutableList<NetworkNote>?, p1: BmobException?) {
                     if (p1 == null) {
                         if (p0 != null) {
-                            println("服务器返回的数据: ${p0?.toJson()}")
+                            println("服务器返回的数据: ${p0.toJson()}")
                             val netIds = p0.map {
                                 return@map it.id
                             }

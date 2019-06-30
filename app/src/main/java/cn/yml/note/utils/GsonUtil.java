@@ -1,5 +1,6 @@
 package cn.yml.note.utils;
 
+import cn.yml.note.model.Image;
 import cn.yml.note.model.Record;
 import com.cunoraz.tagview.Tag;
 import com.google.gson.Gson;
@@ -64,6 +65,19 @@ public class GsonUtil {
         }
         return bean;
     }
+
+    public static ArrayList<Image> json2ImageList(String json) {
+        Type type = new TypeToken<ArrayList<Image>>(){}.getType();
+        ArrayList<Image> bean = new ArrayList<>();
+        try {
+            bean = getInstance().fromJson(json, type);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+        }
+        return bean;
+    }
+
+
 
     public static String bean2Json(Object object) {
         return getInstance().toJson(object);

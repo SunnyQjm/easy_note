@@ -1,6 +1,8 @@
 package cn.yml.note.activity.main
 
+import android.Manifest
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,7 +12,6 @@ import cn.bmob.v3.listener.UpdateListener
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.edit.EditActivity
-import cn.yml.note.activity.record.RecordActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.activity.setting.SettingActivity
 import cn.yml.note.extensions.jumpTo
@@ -19,10 +20,10 @@ import cn.yml.note.extensions.toJson
 import cn.yml.note.extensions.toast
 import cn.yml.note.model.Note
 import cn.yml.note.model.delete
-import cn.yml.note.model.deleteLocal
 import cn.yml.note.model.params.IntentParam
 import cn.yml.note.utils.GsonUtil
 import cn.yml.note.utils.database
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.alert
 import org.jetbrains.anko.appcompat.v7.Appcompat
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
 
     private var noteAdapter: NoteAdapter? = null
     private var synIng = false           // 是否正在同步
+    private val rxPermissions = RxPermissions(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -105,21 +107,44 @@ class MainActivity : AppCompatActivity() {
         }
 
         imgRefresh.setOnClickListener {
+            println("do permission request")
             // 点击同步按钮强制同步（无论是何网络环境）
-            autoSyn(true)
+            rxPermissions
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe { granted ->
+                    println("permission request result $granted")
+                    if(granted) {
+                        autoSyn(true)
+                    } else {
+                        toast("没有读写权限")
+                    }
+                }
         }
     }
 
+    @SuppressLint("CheckResult")
     override fun onResume() {
         super.onResume()
         getDataFromStorage()
 
-        autoSyn()
+        rxPermissions
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .subscribe { granted ->
+                if(granted) {
+                    autoSyn()
+                } else {
+                    toast("没有读写权限")
+                }
+            }
     }
 
     private fun autoSyn(forceSyn: Boolean = false) {
+        println("check do syn")
         if (synIng)
             return
+        println("do syn")
         if (!BmobUser.isLogin()) {
             if (forceSyn) {          //忽略自动同步，手动同步时未登录则提示登录
                 imgRefresh.snackbar("请先登录", "点此登录", action = {
@@ -146,6 +171,8 @@ class MainActivity : AppCompatActivity() {
                     toast("同步失败")
                 }
             }
+        } else {
+            println("do not syn")
         }
     }
 
@@ -169,7 +196,7 @@ class MainActivity : AppCompatActivity() {
                                 id,
                                 noteTitle,
                                 noteContent,
-                                GsonUtil.json2Bean(noteImages),
+                                GsonUtil.json2ImageList(noteImages),
                                 GsonUtil.json2RecordList(noteRecording),
                                 GsonUtil.json2TagList(tags),
                                 createTime,

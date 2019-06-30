@@ -11,21 +11,17 @@ import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.TextView
-import cn.bmob.v3.datatype.BmobFile
 import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.SaveListener
 import cn.bmob.v3.listener.UpdateListener
-import cn.bmob.v3.listener.UploadFileListener
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.picture_preview.PicturePreviewActivity
 import cn.yml.note.extensions.*
-import cn.yml.note.model.Note
-import cn.yml.note.model.Record
+import cn.yml.note.model.*
 import cn.yml.note.model.params.IntentParam
-import cn.yml.note.model.save
-import cn.yml.note.model.update
 import cn.yml.note.utils.ContentUriUtil
+import cn.yml.note.utils.FileUtils
 import cn.yml.note.utils.MyImagePicker
 import com.github.piasy.rxandroidaudio.AudioRecorder
 import com.qingmei2.rximagepicker.core.RxImagePicker
@@ -35,12 +31,15 @@ import com.zzhoujay.richtext.RichText
 import kotlinx.android.synthetic.main.activity_edit.*
 import kotlinx.android.synthetic.main.bar.*
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.zzhoujay.glideimagegetter.GlideImageGetter
+import com.zzhoujay.richtext.CacheType
 import com.zzhoujay.richtext.ImageHolder
 import com.zzhoujay.richtext.callback.OnUrlClickListener
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import org.jetbrains.anko.*
+import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.sdk27.coroutines.onClick
 import java.io.File
 import java.util.*
@@ -184,7 +183,17 @@ class EditActivity : AppCompatActivity() {
         // 添加录音
         llAddSoundRecord.setOnClickListener {
             llAddSoundRecord.scaleXY(1f, 1.2f, 1f)
-            insertRecord()
+            // 先获取相机权限和读取手机相册的权限
+            rxPermissions
+                .request(
+                    Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                .subscribe { granted ->
+                    if (granted) {
+                        insertRecord()
+                    }
+                }
         }
 
         // 预览便签
@@ -303,33 +312,35 @@ class EditActivity : AppCompatActivity() {
     fun insetPicture(uri: Uri) {
         val absolutePath = ContentUriUtil.getPath(this, uri)
         val file = File(absolutePath)
-        val bmobFile = BmobFile(file)
+        if (!file.exists()) {
+            llAddPicture.snackbar("图片: $absolutePath 不存在，插入失败")
+            return
+        }
+
         val dialog = indeterminateProgressDialog("正在插入") {
 
         }
-        bmobFile
-            .upload(object : UploadFileListener() {
-                override fun done(p0: BmobException?) {
-                    if (p0 == null) {        // 上传成功
-                        note.noteImages.add(bmobFile.fileUrl)
-                        val index = etContent.selectionStart
-                        val insertText = "\n![](${bmobFile.fileUrl})\n"
-                        val editable = etContent.editableText
-                        if (index < 0 || index >= editable.length) {
-                            editable.append(insertText)
-                        } else {
-                            editable.insert(index, insertText)
-                        }
-                    } else {                // 上传失败
-                    }
-                    dialog.dismiss()
-                }
+        // 将选中的图片拷贝到本应用的缓存目录下
+        val targetFile = file.copyTo(
+            FileUtils.generatePictureFile("${System.currentTimeMillis()}-${file.name}"), true
+        )
 
-                override fun onProgress(value: Int?) {
-                    super.onProgress(value)
-                }
 
-            })
+        note.noteImages.add(
+            Image(
+                fileName = targetFile.name,
+                filePath = targetFile.absolutePath
+            )
+        )
+        val index = etContent.selectionStart
+        val insertText = "\n![](${targetFile.absoluteFile})\n"
+        val editable = etContent.editableText
+        if (index < 0 || index >= editable.length) {
+            editable.append(insertText)
+        } else {
+            editable.insert(index, insertText)
+        }
+        dialog.dismiss()
 
     }
 
@@ -500,6 +511,7 @@ class EditActivity : AppCompatActivity() {
 
     fun renderRichText(content: String) {
         RichText.fromMarkdown(content)
+            .cache(CacheType.layout)
             .scaleType(ImageHolder.ScaleType.fit_center) // 图片缩放方式
 //            .imageLongClick(OnImageLongClickListener { imageUrls, position ->
 //
@@ -516,7 +528,7 @@ class EditActivity : AppCompatActivity() {
                 override fun urlClicked(url: String?): Boolean {
                     url?.let { name ->
                         val recording = note.noteRecording.filter { it.fileName == name }
-                        if(recording.isNotEmpty()) {
+                        if (recording.isNotEmpty()) {
                             playRecord(recording.first())
                         }
                     }
