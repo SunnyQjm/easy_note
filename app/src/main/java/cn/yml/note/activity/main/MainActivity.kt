@@ -12,6 +12,7 @@ import cn.bmob.v3.listener.UpdateListener
 import cn.yml.note.App
 import cn.yml.note.R
 import cn.yml.note.activity.edit.EditActivity
+import cn.yml.note.activity.login.LoginActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.activity.setting.SettingActivity
 import cn.yml.note.extensions.jumpTo
@@ -60,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                 jumpTo(SettingActivity::class.java)
 //            jumpTo(RegisterLoginActivity::class.java)
 //            jumpTo(RecordActivity::class.java)
+//            jumpTo(LoginActivity::class.java)
         }
 
         noteAdapter = NoteAdapter(mutableListOf())

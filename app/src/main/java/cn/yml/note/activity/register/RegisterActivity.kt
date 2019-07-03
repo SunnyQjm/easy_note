@@ -1,4 +1,4 @@
-package cn.yml.note.activity.register_login
+package cn.yml.note.activity.register
 
 import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
@@ -6,10 +6,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import cn.bmob.v3.BmobSMS
-import cn.bmob.v3.BmobUser
 import cn.bmob.v3.exception.BmobException
-import cn.bmob.v3.listener.LogInListener
 import cn.bmob.v3.listener.QueryListener
+import cn.bmob.v3.listener.SaveListener
 import cn.yml.note.R
 import cn.yml.note.activity.main.MainActivity
 import cn.yml.note.extensions.hideSoftKeyboard
@@ -18,31 +17,69 @@ import cn.yml.note.extensions.setStyleText
 import cn.yml.note.model.User
 import cn.yml.note.utils.AccountValidatorUtil
 import cn.yml.note.utils.doInterval
-import kotlinx.android.synthetic.main.activity_register_login.*
+import kotlinx.android.synthetic.main.activity_register.*
+import kotlinx.android.synthetic.main.activity_register.etPhone
+import kotlinx.android.synthetic.main.activity_register.tvSendCode
 import kotlinx.android.synthetic.main.bar.*
 import org.jetbrains.anko.design.snackbar
 
 /**
- * 一键登录页面
+ * 注册页面
  */
-class RegisterLoginActivity : AppCompatActivity() {
+class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_register_login)
+        setContentView(R.layout.activity_register)
 
         initView()
     }
 
     private fun initView() {
+        tvRight.visibility = View.GONE
+        tvTitle.text = "注册"
         imgBack.setOnClickListener {
             onBackPressed()
         }
 
-        tvTitle.text = "一键登录"
+        // 注册操作
+        btnRegister.setOnClickListener {
+            val phone = etPhone.text.toString()
+            val code = etCode.text.toString()
+            val password = etPassword.text.toString()
+            val rePassword = etRePassword.text.toString()
+            if(phone.isEmpty() || code.isEmpty() ||
+                    password.isEmpty() || rePassword.isEmpty()) {
+                btnRegister.snackbar(R.string.please_complete_fill_info)
+                return@setOnClickListener
+            }
+            if(!AccountValidatorUtil.isMobile(phone)) {
+                btnRegister.snackbar(R.string.please_input_validate_phone_number)
+                return@setOnClickListener
+            }
+            if(password != rePassword) {
+                btnRegister.snackbar("两次输入的密码不一致")
+                return@setOnClickListener
+            }
 
-        tvRight.visibility = View.GONE
+            val user = User()
+            user.mobilePhoneNumber = phone
+            user.setPassword(password)
+            user.username = phone
+            user.signOrLogin(code, object : SaveListener<User>() {
+                override fun done(p0: User?, p1: BmobException?) {
+                    if(p1 == null) {        // 注册成功
+                        jumpTo(MainActivity::class.java)
+                    } else {
+                        btnRegister.snackbar("注册失败: ${p1.message}")
+                    }
+                }
 
+            })
+
+        }
+
+        // 发送验证码
         tvSendCode.setOnClickListener {
             hideSoftKeyboard(tvSendCode)
             //发送验证码回调
@@ -78,33 +115,5 @@ class RegisterLoginActivity : AppCompatActivity() {
             }
         }
 
-        // 登录
-        btnLogin.setOnClickListener {
-            hideSoftKeyboard(btnLogin)
-            val phone = etPhone.text.toString()
-            val vertifyCode = etCode.text.toString()
-            if (!AccountValidatorUtil.isMobile(phone)) {
-                tvSendCode.snackbar(R.string.please_input_validate_phone_number)
-                return@setOnClickListener
-            }
-            if (vertifyCode.isEmpty()) {
-                tvSendCode.snackbar(R.string.vertify_code_not_allow_empty)
-                return@setOnClickListener
-            }
-
-            println("phone: $phone")
-            println("code: $vertifyCode")
-            BmobUser.signOrLoginByMobilePhone(phone, vertifyCode, object : LogInListener<User>() {
-                override fun done(p0: User?, p1: BmobException?) {
-                    if (p1 == null) {
-                        jumpTo(MainActivity::class.java)
-                    } else {
-                        btnLogin.snackbar("登录失败，请检查验证码是否正确！${p1.message}")
-                        println(p1.message?:"")
-                    }
-                }
-
-            })
-        }
     }
 }

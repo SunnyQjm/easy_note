@@ -6,6 +6,7 @@ import android.view.View
 import cn.bmob.v3.BmobUser
 import cn.yml.note.App
 import cn.yml.note.R
+import cn.yml.note.activity.login.LoginActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.extensions.jumpTo
 import cn.yml.note.model.User
@@ -37,13 +38,13 @@ class SettingActivity : AppCompatActivity() {
         // 退出
         tvExit.setOnClickListener {
             BmobUser.logOut()
-            jumpTo(RegisterLoginActivity::class.java)
+            jumpTo(LoginActivity::class.java)
         }
 
         // 用户信息
         lmiUser.setOnClickListener {
             if(!BmobUser.isLogin()) {
-                jumpTo(RegisterLoginActivity::class.java)
+                jumpTo(LoginActivity::class.java)
             }
         }
 

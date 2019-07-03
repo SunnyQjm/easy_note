@@ -31,7 +31,6 @@ import com.zzhoujay.richtext.RichText
 import kotlinx.android.synthetic.main.activity_edit.*
 import kotlinx.android.synthetic.main.bar.*
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.zzhoujay.glideimagegetter.GlideImageGetter
 import com.zzhoujay.richtext.CacheType
 import com.zzhoujay.richtext.ImageHolder
 import com.zzhoujay.richtext.callback.OnUrlClickListener
