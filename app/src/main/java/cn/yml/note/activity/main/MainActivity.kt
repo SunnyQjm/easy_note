@@ -120,37 +120,25 @@ class MainActivity : AppCompatActivity() {
         }
 
         imgRefresh.setOnClickListener {
-            //            jumpTo(CalendarActivity::class.java)
-//            rxPermissions
-//                .request(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
-//                .subscribe { granted ->
-//                    if(granted) {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//                            CalendarReminderUtils
-//                                .addCalendarEvent(this,"学校读书","吃了饭再去",
-//                                    System.currentTimeMillis()+3600*24*1000*2+10000,
-//                                    success = {
-//                                        toast("添加日历事件成功")
-//                                    },
-//                                    fail = {
-//                                        toast("添加日历事件失败")
-//                                    })
-//                        }
-//                    }
-//                }
-//            println("do permission request")
-//            // 点击同步按钮强制同步（无论是何网络环境）
-//            rxPermissions
-//                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
-//                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                .subscribe { granted ->
-//                    println("permission request result $granted")
-//                    if(granted) {
-//                        autoSyn(true)
-//                    } else {
-//                        toast("没有读写权限")
-//                    }
-//                }
+            println("do permission request")
+            // 点击同步按钮强制同步（无论是何网络环境）
+            rxPermissions
+                .request(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                )
+                .subscribe { granted ->
+                    println("permission request result $granted")
+                    if (granted) {
+                        autoSyn(true)
+                    } else {
+                        toast("没有读写权限")
+                    }
+                }
+        }
+
+        imgCalendar.setOnClickListener {
+            jumpTo(CalendarActivity::class.java)
         }
 
 
@@ -171,6 +159,7 @@ class MainActivity : AppCompatActivity() {
         }
         tagView.setOnTagClickListener { tag, position ->
             App.selectedTag = tag
+            App.selectMode = 0
             jumpTo(TagActivity::class.java)
         }
     }

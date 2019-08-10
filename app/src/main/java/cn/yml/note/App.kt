@@ -13,6 +13,8 @@ class App : Application() {
         var note: Note? = null
         var isAutoSyn = false
         var selectedTag: Tag? = null
+        var selectMode: Int = 0             // 0 -> Tag 1 -> Calendar
+        var selectDay: Long = 0
         const val APP_NAME = "easy_note"
         const val SP_AUTO_SYN = "SP_AUTO_SYN"
     }

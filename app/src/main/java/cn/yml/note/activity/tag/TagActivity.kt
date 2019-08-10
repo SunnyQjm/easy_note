@@ -1,6 +1,7 @@
 package cn.yml.note.activity.tag
 
 import android.Manifest
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -31,6 +32,7 @@ import org.jetbrains.anko.db.rowParser
 import org.jetbrains.anko.db.select
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.yesButton
+import java.util.*
 
 class TagActivity : AppCompatActivity() {
 
@@ -45,6 +47,7 @@ class TagActivity : AppCompatActivity() {
         initView()
     }
 
+    @SuppressLint("SetTextI18n")
     private fun initView() {
         tvRight.visibility = View.INVISIBLE
 
@@ -56,21 +59,47 @@ class TagActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         noteAdapter?.bindToRecyclerView(recyclerView)
 
-        App.selectedTag?.let {
-            tvTitle.text = it.text
-            rxPermissions
-                .request(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE
-                )
-                .subscribe { granted ->
-                    if (granted) {
-                        getNotesByTag(it)
-                    } else {
-                        toast("没有读写权限")
-                    }
+        when(App.selectMode) {
+            0 -> {      // 点击标签
+                App.selectedTag?.let {
+                    tvTitle.text = it.text
+                    rxPermissions
+                        .request(
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                        )
+                        .subscribe { granted ->
+                            if (granted) {
+                                getNotesByTag(it)
+                            } else {
+                                toast("没有读写权限")
+                            }
+                        }
                 }
+            }
+            1 -> {      // 点击日历中的某一天
+                val instance = Calendar.getInstance()
+                instance.timeInMillis = App.selectDay
+                val year = instance.get(Calendar.YEAR)
+                val month = instance.get(Calendar.MONTH) + 1
+                val day = instance.get(Calendar.DAY_OF_MONTH)
+
+                tvTitle.text = "${year}年${month}月${day}日"
+                rxPermissions
+                    .request(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                    )
+                    .subscribe { granted ->
+                        if (granted) {
+                            getNotesByCalendar(App.selectDay)
+                        } else {
+                            toast("没有读写权限")
+                        }
+                    }
+            }
         }
+
 
 
         // 点击便签Item进入便签预览界面
@@ -117,6 +146,49 @@ class TagActivity : AppCompatActivity() {
 
     }
 
+
+    private fun getNotesByCalendar(selectDay: Long) {
+        val instance = Calendar.getInstance()
+        instance.timeInMillis = selectDay
+        val year = instance.get(Calendar.YEAR)
+        val month = instance.get(Calendar.MONTH) + 1
+        val day = instance.get(Calendar.DAY_OF_MONTH)
+
+        database.use {
+            select("note")
+                .exec {
+                    val result =
+                        parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
+                                              noteRecording: String, tags: String, createTime: Long, reminder: Long, objectId: String ->
+                            return@rowParser Note(
+                                id,
+                                noteTitle,
+                                noteContent,
+                                GsonUtil.json2ImageList(noteImages) as MutableList<Image>,
+                                GsonUtil.json2RecordList(noteRecording),
+                                GsonUtil.json2TagList(tags),
+                                createTime,
+                                reminder,
+                                objectId
+                            )
+                        }).filter {
+                            if(it.reminder < 0)
+                                return@filter false
+                            val i = Calendar.getInstance()
+                            i.timeInMillis = it.reminder
+                            val y = i.get(Calendar.YEAR)
+                            val m = i.get(Calendar.MONTH) + 1
+                            val d = i.get(Calendar.DAY_OF_MONTH)
+                            println("$y-$m-$d")
+                            return@filter y == year && m == month && d == day
+                        }
+                    println(result.toJson())
+                    noteAdapter?.data?.clear()
+                    noteAdapter?.addData(result)
+                }
+        }
+    }
+
     /**
      * 获取指定标签的Note
      */
@@ -140,14 +212,12 @@ class TagActivity : AppCompatActivity() {
                             )
                         }).filter {
                             var need = false
-                            println("begin")
                             it.tags.forEach { tag ->
                                 println(tag.toJson())
                                 if (tag.text == t.text)
                                     need = true
                                 println("${tag.text} <> ${t.text}")
                             }
-                            println("need: $need")
                             return@filter need
                         }
                     println(result.toJson())
