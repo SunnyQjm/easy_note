@@ -1,6 +1,7 @@
 package cn.yml.note.activity.main
 
 import android.content.Context
+import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import cn.bmob.v3.BmobQuery
 import cn.bmob.v3.BmobUser
@@ -27,6 +28,13 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
                     .setText(R.id.tvTime, item.createTime.toYMD_HM())
 //                    .setText(R.id.tvCategory, item.category)
 
+                if(item.reminder > 0) {
+                    helper.setVisible(R.id.imgReminder, true)
+                        .setText(R.id.tvReminder, item.reminder.toYMD_HM())
+                } else {
+                    helper.setVisible(R.id.imgReminder, false)
+                        .setVisible(R.id.tvReminder, false)
+                }
                 val tagView = helper.getView<TagView>(R.id.tagView)
                 tagView.addTags(item.tags)
                 tagView.setDeleteAble(false)

@@ -48,25 +48,39 @@
             android:layout_height="wrap_content">
 
     </com.cunoraz.tagview.TagView>
-    <TextView
-            android:id="@+id/tvTime"
-            android:layout_marginTop="5dp"
-            android:text="刚刚"
-            android:layout_width="wrap_content"
+    <LinearLayout
+            android:id="@+id/llTime"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:layout_constraintTop_toBottomOf="@id/tagView"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="5dp"/>
-    <!--<TextView-->
-    <!--android:text="旅行"-->
-    <!--android:layout_width="wrap_content"-->
-    <!--android:layout_height="wrap_content"-->
-    <!--android:textColor="@color/text_color_grey"-->
-    <!--android:background="@drawable/round_square_bg_primary_color"-->
-    <!--android:paddingLeft="4dp"-->
-    <!--android:paddingRight="4dp"-->
-    <!--android:id="@+id/tvCategory"-->
-    <!--app:layout_constraintTop_toBottomOf="@+id/tvTime" app:layout_constraintBottom_toTopOf="@+id/tvTime"-->
-    <!--app:layout_constraintStart_toEndOf="@+id/tvTime" android:layout_marginStart="20dp"/>-->
+            android:layout_marginBottom="5dp"
+            android:gravity="center_vertical"
+    >
+        <TextView
+                android:id="@+id/tvTime"
+                android:layout_marginTop="5dp"
+                android:text="刚刚"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+        />
+        <ImageView
+                android:id="@+id/imgReminder"
+                android:layout_marginStart="20dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/time"
+        />
+
+        <TextView
+                android:id="@+id/tvReminder"
+                android:layout_marginStart="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+        />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
