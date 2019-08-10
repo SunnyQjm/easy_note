@@ -3,6 +3,7 @@ package cn.yml.note.activity.main
 import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -11,6 +12,7 @@ import cn.bmob.v3.exception.BmobException
 import cn.bmob.v3.listener.UpdateListener
 import cn.yml.note.App
 import cn.yml.note.R
+import cn.yml.note.activity.calendar.CalendarActivity
 import cn.yml.note.activity.edit.EditActivity
 import cn.yml.note.activity.login.LoginActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
@@ -19,11 +21,15 @@ import cn.yml.note.extensions.jumpTo
 import cn.yml.note.extensions.rotate
 import cn.yml.note.extensions.toJson
 import cn.yml.note.extensions.toast
+import cn.yml.note.model.Image
 import cn.yml.note.model.Note
 import cn.yml.note.model.delete
 import cn.yml.note.model.params.IntentParam
+import cn.yml.note.utils.CalendarReminderUtils
 import cn.yml.note.utils.GsonUtil
 import cn.yml.note.utils.database
+import cn.yml.note.utils.gotoCalendarApp
+import com.cunoraz.tagview.Tag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
 import org.jetbrains.anko.alert
@@ -43,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     private var noteAdapter: NoteAdapter? = null
     private var synIng = false           // 是否正在同步
     private val rxPermissions = RxPermissions(this)
+    private var page = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,9 +66,6 @@ class MainActivity : AppCompatActivity() {
         imgSetting.setOnClickListener {
             if (!synIngJudge())
                 jumpTo(SettingActivity::class.java)
-//            jumpTo(RegisterLoginActivity::class.java)
-//            jumpTo(RecordActivity::class.java)
-//            jumpTo(LoginActivity::class.java)
         }
 
         noteAdapter = NoteAdapter(mutableListOf())
@@ -98,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     yesButton {
                         item?.delete(object : UpdateListener() {
                             override fun done(p0: BmobException?) {
-                                getDataFromStorage()
+                                noteAdapter?.remove(position)
                             }
                         }, this@MainActivity)
                     }
@@ -109,32 +113,74 @@ class MainActivity : AppCompatActivity() {
         }
 
         imgRefresh.setOnClickListener {
-            println("do permission request")
-            // 点击同步按钮强制同步（无论是何网络环境）
-            rxPermissions
-                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe { granted ->
-                    println("permission request result $granted")
-                    if(granted) {
-                        autoSyn(true)
-                    } else {
-                        toast("没有读写权限")
-                    }
-                }
+            //            jumpTo(CalendarActivity::class.java)
+//            rxPermissions
+//                .request(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+//                .subscribe { granted ->
+//                    if(granted) {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                            CalendarReminderUtils
+//                                .addCalendarEvent(this,"学校读书","吃了饭再去",
+//                                    System.currentTimeMillis()+3600*24*1000*2+10000,
+//                                    success = {
+//                                        toast("添加日历事件成功")
+//                                    },
+//                                    fail = {
+//                                        toast("添加日历事件失败")
+//                                    })
+//                        }
+//                    }
+//                }
+//            println("do permission request")
+//            // 点击同步按钮强制同步（无论是何网络环境）
+//            rxPermissions
+//                .request(Manifest.permission.READ_EXTERNAL_STORAGE,
+//                    Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//                .subscribe { granted ->
+//                    println("permission request result $granted")
+//                    if(granted) {
+//                        autoSyn(true)
+//                    } else {
+//                        toast("没有读写权限")
+//                    }
+//                }
         }
+
+
+        smartRefreshView.setOnRefreshListener {
+            // 下拉刷新
+            refresh()
+            smartRefreshView.finishRefresh()
+        }
+
+        smartRefreshView.setOnLoadMoreListener {
+            // 上拉加载更多
+            page++
+            getDataFromStorage(page)
+            smartRefreshView.finishLoadMore()
+        }
+        tagView.post {
+            getAllTags()
+        }
+    }
+
+    private fun refresh() {
+        page = 1;
+        getDataFromStorage(1)
     }
 
     @SuppressLint("CheckResult")
     override fun onResume() {
         super.onResume()
-        getDataFromStorage()
+        refresh()
 
         rxPermissions
-            .request(Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .request(
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            )
             .subscribe { granted ->
-                if(granted) {
+                if (granted) {
                     autoSyn()
                 } else {
                     toast("没有读写权限")
@@ -168,7 +214,7 @@ class MainActivity : AppCompatActivity() {
                     if (forceSyn) {
                         imgRefresh.snackbar("同步成功")
                     }
-                    getDataFromStorage()
+                    refresh();
                 } else {
                     toast("同步失败")
                 }
@@ -186,10 +232,14 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun getDataFromStorage() {
+    /**
+     * 从本地获取数据
+     */
+    private fun getDataFromStorage(page: Int = 1, limit: Int = 10) {
         database.use {
             select("note")
                 .orderBy("createTime", SqlOrderDirection.DESC)
+                .limit((page - 1) * limit, limit)
                 .exec {
                     val result =
                         parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
@@ -198,7 +248,7 @@ class MainActivity : AppCompatActivity() {
                                 id,
                                 noteTitle,
                                 noteContent,
-                                GsonUtil.json2ImageList(noteImages),
+                                GsonUtil.json2ImageList(noteImages) as MutableList<Image>,
                                 GsonUtil.json2RecordList(noteRecording),
                                 GsonUtil.json2TagList(tags),
                                 createTime,
@@ -206,8 +256,34 @@ class MainActivity : AppCompatActivity() {
                             )
                         })
                     println(result.toJson())
-                    noteAdapter?.data?.clear()
+                    if (page == 1) {
+                        noteAdapter?.data?.clear()
+                    }
                     noteAdapter?.addData(result)
+                }
+        }
+    }
+
+    private fun getAllTags() {
+        database.use {
+            select("note", "tags")
+                .exec {
+                    print("exec")
+                    val result = parseList(rowParser { tags: String ->
+                        return@rowParser GsonUtil.json2TagList(tags)
+                    })
+                    val allTags = mutableListOf<Tag>()
+                    val tagNames = mutableListOf<String>()
+                    result.forEach { tags ->
+                        tags.forEach { tag ->
+                            if (!tagNames.contains(tag.text)) {
+                                tagNames.add(tag.text)
+                                allTags.add(tag)
+                            }
+                        }
+                    }
+                    toast(allTags.toJson())
+                    tagView.addTags(allTags)
                 }
         }
     }

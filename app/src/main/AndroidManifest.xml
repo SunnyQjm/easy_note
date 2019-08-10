@@ -12,6 +12,8 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/> <!-- 保持CPU 运转，屏幕和键盘灯有可能是关闭的,用于文件上传和下载 -->
     <uses-permission android:name="android.permission.WAKE_LOCK"/> <!-- 允许读取手机状态 用于创建BmobInstallation -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
 
     <application
             android:name=".App"
@@ -23,6 +25,10 @@
             android:theme="@style/AppTheme"
             android:usesCleartextTraffic="true"
             tools:replace="android:label">
+        <activity android:name=".activity.tag.TagActivity">
+        </activity>
+        <activity android:name=".activity.calendar.CalendarActivity">
+        </activity>
         <activity android:name=".activity.login.LoginActivity">
         </activity>
         <activity android:name=".activity.register.RegisterActivity">
@@ -40,8 +46,8 @@
         <activity android:name=".activity.edit.EditActivity">
         </activity>
         <activity
-                android:launchMode="singleTask"
-                android:name=".activity.main.MainActivity">
+                android:name=".activity.main.MainActivity"
+                android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
