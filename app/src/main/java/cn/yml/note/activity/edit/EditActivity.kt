@@ -511,6 +511,17 @@ class EditActivity : AppCompatActivity() {
 
             }, this)
         }
+
+        if(note.reminder > 0) {
+            // 如果存在先删除旧的事项
+            CalendarReminderUtils.deleteCalendarEvent(this, "易便签提醒(${note.id})")
+            note.reminder = note.reminder
+            CalendarReminderUtils.addCalendarEvent(
+                this, "易便签提醒(${note.id})", note.noteContent,
+                note.reminder
+            )
+            renderReminderText(note)
+        }
     }
 
     /**

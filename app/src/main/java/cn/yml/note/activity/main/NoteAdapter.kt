@@ -30,6 +30,7 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
 
                 if(item.reminder > 0) {
                     helper.setVisible(R.id.imgReminder, true)
+                        .setVisible(R.id.tvReminder, true)
                         .setText(R.id.tvReminder, item.reminder.toYMD_HM())
                 } else {
                     helper.setVisible(R.id.imgReminder, false)
