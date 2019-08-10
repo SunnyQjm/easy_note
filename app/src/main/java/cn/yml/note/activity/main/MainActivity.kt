@@ -17,6 +17,7 @@ import cn.yml.note.activity.edit.EditActivity
 import cn.yml.note.activity.login.LoginActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
 import cn.yml.note.activity.setting.SettingActivity
+import cn.yml.note.activity.tag.TagActivity
 import cn.yml.note.extensions.jumpTo
 import cn.yml.note.extensions.rotate
 import cn.yml.note.extensions.toJson
@@ -162,10 +163,14 @@ class MainActivity : AppCompatActivity() {
         tagView.post {
             getAllTags()
         }
+        tagView.setOnTagClickListener { tag, position ->
+            App.selectedTag = tag
+            jumpTo(TagActivity::class.java)
+        }
     }
 
     private fun refresh() {
-        page = 1;
+        page = 1
         getDataFromStorage(1)
     }
 
@@ -182,6 +187,7 @@ class MainActivity : AppCompatActivity() {
             .subscribe { granted ->
                 if (granted) {
                     autoSyn()
+                    getAllTags()
                 } else {
                     toast("没有读写权限")
                 }
@@ -282,7 +288,6 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                     }
-                    toast(allTags.toJson())
                     tagView.addTags(allTags)
                 }
         }

@@ -5,12 +5,14 @@ import android.content.Context
 import cn.bmob.v3.Bmob
 import cn.yml.note.model.Note
 import cn.yml.note.utils.SpUtils
+import com.cunoraz.tagview.Tag
 import com.zzhoujay.richtext.RichText
 
 class App : Application() {
     companion object {
         var note: Note? = null
         var isAutoSyn = false
+        var selectedTag: Tag? = null
         const val APP_NAME = "easy_note"
         const val SP_AUTO_SYN = "SP_AUTO_SYN"
     }
