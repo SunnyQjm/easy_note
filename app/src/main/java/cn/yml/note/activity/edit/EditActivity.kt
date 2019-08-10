@@ -20,9 +20,12 @@ import cn.yml.note.activity.picture_preview.PicturePreviewActivity
 import cn.yml.note.extensions.*
 import cn.yml.note.model.*
 import cn.yml.note.model.params.IntentParam
+import cn.yml.note.utils.CalendarReminderUtils
 import cn.yml.note.utils.ContentUriUtil
 import cn.yml.note.utils.FileUtils
 import cn.yml.note.utils.MyImagePicker
+import com.bigkoo.pickerview.builder.TimePickerBuilder
+import com.bigkoo.pickerview.listener.OnTimeSelectListener
 import com.github.piasy.rxandroidaudio.AudioRecorder
 import com.qingmei2.rximagepicker.core.RxImagePicker
 import com.qingmei2.rximagepicker_extension.MimeType
@@ -286,6 +289,34 @@ class EditActivity : AppCompatActivity() {
             view.remove(position)
             note.tags.removeAt(position)
         }
+
+        renderReminderText(note)
+        imgReminder.setOnClickListener {
+            rxPermissions
+                .request(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)
+                .subscribe { granted ->
+                    if (granted) {
+                        selectReminderTime { date, v ->
+                            // 如果存在先删除旧的事项
+                            CalendarReminderUtils.deleteCalendarEvent(this, "易便签提醒(${note.id})")
+                            note.reminder = date.time
+                            CalendarReminderUtils.addCalendarEvent(
+                                this, "易便签提醒(${note.id})", note.noteContent,
+                                note.reminder
+                            )
+                            renderReminderText(note)
+                        }
+                    }
+                }
+
+        }
+    }
+
+
+    private fun renderReminderText(node: Note) {
+        if (note.reminder > 0) {
+            tvReminder.text = note.reminder.toYMD_HMS()
+        }
     }
 
     /**
@@ -543,5 +574,20 @@ class EditActivity : AppCompatActivity() {
             })
             .size(ImageHolder.MATCH_PARENT, dip(100))
             .into(tvPreview)
+    }
+
+
+    /**
+     * 选择提醒时间
+     */
+    fun selectReminderTime(callback: (date: Date, v: View?) -> Unit) {
+        val pvTime = TimePickerBuilder(this, OnTimeSelectListener { date, v ->
+            callback(date, v)
+        })
+            .setType(BooleanArray(6, init = {
+                return@BooleanArray true
+            }))//分别对应年月日时分秒，默认全部显示
+            .build()
+        pvTime.show()
     }
 }

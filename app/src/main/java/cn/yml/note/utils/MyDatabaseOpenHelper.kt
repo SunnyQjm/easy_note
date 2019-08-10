@@ -26,6 +26,7 @@ class MyDatabaseOpenHelper private constructor(ctx: Context) : ManagedSQLiteOpen
             "noteRecording" to TEXT,
             "tags" to TEXT,
             "createTime" to INTEGER,
+            "reminder" to INTEGER,
             "objectId" to TEXT)
     }
 

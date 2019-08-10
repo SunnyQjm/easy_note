@@ -142,13 +142,15 @@ object CalendarReminderUtils {
     /**
      * 删除日历事件
      */
-    fun deleteCalendarEvent(context: Context?, title: String) {
+    fun deleteCalendarEvent(context: Context?, title: String, success: () -> Unit = {},
+                            fail: () -> Unit = {}) {
         if (context == null) {
             return
         }
         val eventCursor = context.contentResolver.query(Uri.parse(CALENDER_EVENT_URL), null, null, null, null)
-        try {
+        eventCursor.use { eventCursor ->
             if (eventCursor == null) { //查询返回空值
+                fail()
                 return
             }
             if (eventCursor.count > 0) {
@@ -167,8 +169,7 @@ object CalendarReminderUtils {
                     eventCursor.moveToNext()
                 }
             }
-        } finally {
-            eventCursor?.close()
+            success()
         }
     }
 }

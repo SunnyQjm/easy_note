@@ -25,30 +25,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/bar"/>
 
-    <!--<LinearLayout-->
-    <!--android:id="@+id/llCategory"-->
-    <!--android:orientation="horizontal"-->
-    <!--app:layout_constraintTop_toBottomOf="@id/textView2"-->
-    <!--app:layout_constraintLeft_toLeftOf="@id/textView2"-->
-    <!--app:layout_constraintRight_toRightOf="@id/textView2"-->
-    <!--android:layout_width="0dp"-->
-    <!--android:gravity="center_vertical"-->
-    <!--android:layout_height="wrap_content" android:layout_marginTop="10dp">-->
-    <!---->
-    <!--<TextView-->
-    <!--android:textSize="16sp"-->
-    <!--android:text="标签 : "-->
-    <!--android:textColor="@color/text_color"-->
-    <!--android:textStyle="bold"-->
-    <!--android:layout_width="wrap_content" android:layout_height="wrap_content"/>-->
-
-    <!--<EditText-->
-    <!--android:id="@+id/etCategory"-->
-    <!--android:textSize="16sp"-->
-    <!--android:text="小记"-->
-    <!--android:layout_weight="1"-->
-    <!--android:layout_width="wrap_content" android:layout_height="wrap_content"/>-->
-    <!--</LinearLayout>-->
     <com.cunoraz.tagview.TagView
             android:id="@+id/tagView"
             android:orientation="horizontal"
@@ -67,19 +43,45 @@
     >
 
     </com.cunoraz.tagview.TagView>
-    <TextView
-            android:text="2016/06/07  07:24"
+    <LinearLayout
+            android:id="@+id/ll_time_reminder"
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/tvTime"
+            android:gravity="center_vertical"
             app:layout_constraintTop_toBottomOf="@+id/tagView" app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="8dp" android:layout_marginTop="8dp"/>
+            android:layout_marginStart="8dp" android:layout_marginTop="8dp"
+    >
+
+        <TextView
+                android:id="@+id/tvTime"
+                android:text="2016/06/07  07:24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+        />
+        <ImageView
+                android:id="@+id/imgReminder"
+                android:layout_marginStart="20dp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/time"
+        />
+
+        <TextView
+                android:id="@+id/tvReminder"
+                android:layout_marginStart="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+        />
+
+    </LinearLayout>
+
 
     <FrameLayout
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@id/tvTime"
+            app:layout_constraintTop_toBottomOf="@id/ll_time_reminder"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="@+id/textView2" app:layout_constraintStart_toStartOf="@+id/textView2"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/linearLayout"
@@ -106,7 +108,7 @@
             android:hint="在此输入便签内容（支持Markdown语法哦～）"
             android:gravity="top"
             android:textSize="14sp"
-            app:layout_constraintTop_toBottomOf="@id/tvTime"
+            app:layout_constraintTop_toBottomOf="@id/ll_time_reminder"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="@+id/textView2" app:layout_constraintStart_toStartOf="@+id/textView2"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/linearLayout"/>

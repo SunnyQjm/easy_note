@@ -126,7 +126,7 @@ class TagActivity : AppCompatActivity() {
                 .exec {
                     val result =
                         parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
-                                              noteRecording: String, tags: String, createTime: Long, objectId: String ->
+                                              noteRecording: String, tags: String, createTime: Long, reminder: Long, objectId: String ->
                             return@rowParser Note(
                                 id,
                                 noteTitle,
@@ -135,6 +135,7 @@ class TagActivity : AppCompatActivity() {
                                 GsonUtil.json2RecordList(noteRecording),
                                 GsonUtil.json2TagList(tags),
                                 createTime,
+                                reminder,
                                 objectId
                             )
                         }).filter {

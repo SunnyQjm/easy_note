@@ -39,6 +39,7 @@ data class Note(
     var noteRecording: MutableList<Record> = mutableListOf(),   // 录音
     var tags: MutableList<Tag> = mutableListOf(),            // 标签
     var createTime: Long = System.currentTimeMillis(),           // 创建时间
+    var reminder: Long = -1,
     var objectId: String = ""                                   // Bmob对象Id
 )
 
@@ -49,7 +50,9 @@ data class NetworkNote(
     var noteImages: MutableList<Image> = mutableListOf(),        // 便签图片
     var noteRecording: MutableList<Record> = mutableListOf(),     // 录音
     var tags: MutableList<Tag> = mutableListOf(),                   // 标签
-    var user: User? = null,                                         // 关联的用户
+    var user: User? = null,
+    var reminder: Long = -1,
+    // 关联的用户
     var createTime: Long = System.currentTimeMillis()               // 创建时间
 ) : BmobObject()
 
@@ -62,6 +65,7 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
         noteContent = this.noteContent,
         noteImages = this.noteImages,
         createTime = this.createTime,
+        reminder = this.reminder,
         tags = this.tags,
         noteRecording = this.noteRecording
     )
@@ -173,6 +177,7 @@ fun Note.delete(updateListener: UpdateListener, context: Context) {
         noteTitle = this.noteTitle,
         noteContent = this.noteContent,
         tags = this.tags,
+        reminder = this.reminder,
         noteImages = this.noteImages,
         createTime = this.createTime
     )
@@ -197,7 +202,8 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
         noteContent = this.noteContent,
         tags = this.tags,
         noteImages = this.noteImages,
-        createTime = this.createTime
+        createTime = this.createTime,
+        reminder = this.reminder
     )
     if (!BmobUser.isLogin()) {
         if (needSaveToLocalStorage) {
@@ -318,7 +324,8 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
         noteContent = this.noteContent,
         tags = this.tags,
         noteImages = this.noteImages,
-        createTime = this.createTime
+        createTime = this.createTime,
+        reminder = this.reminder
     )
     networkNote.objectId = this.objectId
 

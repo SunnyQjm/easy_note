@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bmob.v3.BmobUser
 import cn.bmob.v3.exception.BmobException
@@ -30,6 +31,10 @@ import cn.yml.note.utils.CalendarReminderUtils
 import cn.yml.note.utils.GsonUtil
 import cn.yml.note.utils.database
 import cn.yml.note.utils.gotoCalendarApp
+import com.bigkoo.pickerview.builder.TimePickerBuilder
+import com.bigkoo.pickerview.listener.OnTimeSelectChangeListener
+import com.bigkoo.pickerview.listener.OnTimeSelectListener
+import com.bigkoo.pickerview.view.TimePickerView
 import com.cunoraz.tagview.Tag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_main.*
@@ -39,6 +44,7 @@ import org.jetbrains.anko.db.*
 import org.jetbrains.anko.design.snackbar
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.yesButton
+import java.util.*
 
 /**
  * 主界面
@@ -249,7 +255,7 @@ class MainActivity : AppCompatActivity() {
                 .exec {
                     val result =
                         parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
-                                              noteRecording: String, tags: String, createTime: Long, objectId: String ->
+                                              noteRecording: String, tags: String, createTime: Long, reminder: Long, objectId: String ->
                             return@rowParser Note(
                                 id,
                                 noteTitle,
@@ -258,6 +264,7 @@ class MainActivity : AppCompatActivity() {
                                 GsonUtil.json2RecordList(noteRecording),
                                 GsonUtil.json2TagList(tags),
                                 createTime,
+                                reminder,
                                 objectId
                             )
                         })
