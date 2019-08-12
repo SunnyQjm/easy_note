@@ -18,6 +18,7 @@ import cn.yml.note.activity.calendar.CalendarActivity
 import cn.yml.note.activity.edit.EditActivity
 import cn.yml.note.activity.login.LoginActivity
 import cn.yml.note.activity.register_login.RegisterLoginActivity
+import cn.yml.note.activity.search.SearchActivity
 import cn.yml.note.activity.setting.SettingActivity
 import cn.yml.note.activity.tag.TagActivity
 import cn.yml.note.extensions.jumpTo
@@ -94,6 +95,10 @@ class MainActivity : AppCompatActivity() {
             if (!synIngJudge())
                 jumpTo(SettingActivity::class.java)
         }
+        imgSearch.setOnClickListener {
+            if (!synIngJudge())
+                jumpTo(SearchActivity::class.java)
+        }
 
         noteAdapter = NoteAdapter(mutableListOf())
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -158,7 +163,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         imgCalendar.setOnClickListener {
-            jumpTo(CalendarActivity::class.java)
+            if (!synIngJudge())
+                jumpTo(CalendarActivity::class.java)
         }
 
 

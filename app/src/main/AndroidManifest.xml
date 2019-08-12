@@ -25,6 +25,8 @@
             android:theme="@style/AppTheme"
             android:usesCleartextTraffic="true"
             tools:replace="android:label">
+        <activity android:name=".activity.search.SearchActivity">
+        </activity>
         <activity android:name=".activity.tag.TagActivity">
         </activity>
         <activity android:name=".activity.calendar.CalendarActivity">
