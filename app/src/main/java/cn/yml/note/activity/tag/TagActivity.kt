@@ -172,10 +172,10 @@ class TagActivity : AppCompatActivity() {
                                 objectId
                             )
                         }).filter {
-                            if(it.reminder < 0)
-                                return@filter false
+//                            if(it.reminder < 0)
+//                                return@filter false
                             val i = Calendar.getInstance()
-                            i.timeInMillis = it.reminder
+                            i.timeInMillis = it.createTime
                             val y = i.get(Calendar.YEAR)
                             val m = i.get(Calendar.MONTH) + 1
                             val d = i.get(Calendar.DAY_OF_MONTH)

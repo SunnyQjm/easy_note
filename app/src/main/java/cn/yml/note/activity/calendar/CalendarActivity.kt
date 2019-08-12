@@ -97,7 +97,6 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
             }
 
 
-
     }
 
     /**
@@ -131,20 +130,17 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
     private fun renderReminder() {
         val map = HashMap<String, Calendar>()
         notes.forEach {
-            if(it.reminder > 0) {
-                val instance = java.util.Calendar.getInstance()
-                instance.timeInMillis = it.reminder
-                val year = instance.get(java.util.Calendar.YEAR)
-                val month = instance.get(java.util.Calendar.MONTH) + 1
-                val day = instance.get(java.util.Calendar.DAY_OF_MONTH)
-                map[getSchemeCalendar(year, month, day, -0xbf24db, "假").toString()] =
-                    getSchemeCalendar(year, month, day, -0xbf24db, "假")
-            }
+            val instance = java.util.Calendar.getInstance()
+            instance.timeInMillis = it.createTime
+            val year = instance.get(java.util.Calendar.YEAR)
+            val month = instance.get(java.util.Calendar.MONTH) + 1
+            val day = instance.get(java.util.Calendar.DAY_OF_MONTH)
+            map[getSchemeCalendar(year, month, day, -0xbf24db, "假").toString()] =
+                getSchemeCalendar(year, month, day, -0xbf24db, "假")
         }
         //此方法在巨大的数据量上不影响遍历性能，推荐使用
         calendarView.setSchemeDate(map)
     }
-
 
 
     private fun getSchemeCalendar(year: Int, month: Int, day: Int, color: Int, text: String): Calendar {
