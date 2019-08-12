@@ -6,6 +6,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.GestureDetector
 import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import cn.bmob.v3.BmobUser
@@ -58,6 +59,20 @@ class MainActivity : AppCompatActivity() {
     private val rxPermissions = RxPermissions(this)
     private var page = 1
 
+    abstract class DoubleClickListener : View.OnClickListener {
+        private val DOUBLE_TIME = 400
+        private var lastClickTime: Long = 0
+
+        override fun onClick(v: View?) {
+            val currentTimeMillis = System.currentTimeMillis()
+            if (currentTimeMillis - lastClickTime < DOUBLE_TIME)
+                onDoubleClick(v)
+            lastClickTime = currentTimeMillis
+        }
+
+        abstract fun onDoubleClick(v: View?)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -66,6 +81,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
+        tvBar.setOnClickListener(object : DoubleClickListener() {
+            override fun onDoubleClick(v: View?) {
+                recyclerView.scrollToPosition(0)
+            }
+        })
         imgEdit.setOnClickListener {
             if (!synIngJudge())
                 jumpTo(EditActivity::class.java)
