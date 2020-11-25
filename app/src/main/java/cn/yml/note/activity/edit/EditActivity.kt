@@ -42,7 +42,7 @@ import java.util.*
 
 
 /**
- * 便签编辑界面
+ * Note edit activity
  */
 class EditActivity : AppCompatActivity() {
 
@@ -60,9 +60,9 @@ class EditActivity : AppCompatActivity() {
 
 
     /**
-     * mode = 0  ==> 编辑模式
-     * mode = 1  ==> 预览模式
-     * mode = 2  ==> 编辑时预览模式
+     * mode = 0  ==> edit mode
+     * mode = 1  ==> preview mode
+     * mode = 2  ==> preview when edit
      */
     private var mode = 0
 
@@ -123,12 +123,12 @@ class EditActivity : AppCompatActivity() {
             }
         }
 
-        // 添加图片
+        // Add picture
         llAddPicture.setOnClickListener {
             hideSoftKeyboard(llAddPicture)
             llAddPicture.scaleXY(1f, 1.2f, 1f)
 
-            // 先获取相机权限和读取手机相册的权限
+            // get permission first
             rxPermissions
                 .request(
                     Manifest.permission.CAMERA, Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -138,17 +138,16 @@ class EditActivity : AppCompatActivity() {
                     if (granted) {
                         selector("Select get picture way", listOf("photograph", "album")) { _, i ->
                             when (i) {
-                                0 -> {          // 拍照
-                                    // 使用摄像头拍摄
+                                0 -> {          // photograph
                                     RxImagePicker.create()
                                         .openCamera(this)
                                         .subscribe { result ->
                                             insetPicture(result.uri)
                                         }
                                 }
-                                1 -> {          // 相册选择
+                                1 -> {          // album
                                     val result = mutableListOf<Uri>()
-                                    // 打开相册选择
+                                    // open album
                                     RxImagePicker.create(MyImagePicker::class.java)
                                         .openGallery(
                                             this,
@@ -177,13 +176,13 @@ class EditActivity : AppCompatActivity() {
                 }
         }
 
-        // 语音转文字
+        // voice to text
         tapHoldBtn.setOnButtonClickListener(object : TapHoldUpButton.OnButtonClickListener {
             val absWrapper = ABSWrapper()
 
             @SuppressLint("CheckResult")
             override fun onLongHoldStart(v: View?) {
-                // 先获取相机权限和读取手机相册的权限
+                // get permission first
                 rxPermissions
                     .request(
                         Manifest.permission.RECORD_AUDIO, Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -194,7 +193,7 @@ class EditActivity : AppCompatActivity() {
                             absWrapper.start(tapHoldBtn.context, onSegmentSuccess = { it ->
                                 // insert segment
                                 val index = etContent.selectionStart
-                                // 删除多余的句号
+                                // Delete extra period
                                 if (it.last() == '。') {
                                     it.dropLast(1)
                                 }
@@ -217,12 +216,8 @@ class EditActivity : AppCompatActivity() {
                 toast("Record time is too short!");
             }
         })
-        llAddSoundRecord.setOnClickListener {
-            llAddSoundRecord.scaleXY(1f, 1.2f, 1f)
 
-        }
-
-        // 预览便签
+        // preview note
         llPreview.setOnClickListener {
             hideSoftKeyboard(llPreview)
             llPreview.scaleXY(1f, 1.2f, 1f)
@@ -245,7 +240,7 @@ class EditActivity : AppCompatActivity() {
             }
         }
 
-        // 添加标签
+        // Add tag
         llAddTag.setOnClickListener {
             hideSoftKeyboard(llAddTag)
             llAddTag.scaleXY(1f, 1.2f, 1f)
@@ -297,7 +292,7 @@ class EditActivity : AppCompatActivity() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
 
-                // 根据便签内容用Markdown渲染组件渲染到预览视图当中
+                // render markdown text
                 s?.let {
                     renderRichText(it.toString())
                     note.noteContent = it.toString()
@@ -342,20 +337,11 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * 不够位数的在前面补0，保留num的长度位数字
-     * @param code
-     * @return
-     */
-    private fun autoGenericCode(code: String, num: Int): String {
-        return String.format("%0" + num + "d", Integer.parseInt(code))
-    }
-
     override fun onBackPressed() {
         val dialog = indeterminateProgressDialog("Saving") {
 
         }
-        // 返回的时候先保存便签
+        // save note before back
         saveNote {
             dialog.dismiss()
             super.onBackPressed()
@@ -364,7 +350,7 @@ class EditActivity : AppCompatActivity() {
 
 
     /**
-     * 插入图片到光标所在位置
+     * Insert picture to current position
      */
     fun insetPicture(uri: Uri) {
         val absolutePath = ContentUriUtil.getPath(this, uri)
@@ -407,30 +393,30 @@ class EditActivity : AppCompatActivity() {
     }
 
     /**
-     * 保存note
+     * save note
      */
     fun saveNote(finishCallback: () -> Unit = {}) {
-        if (note.id.isEmpty()) {         // 新建的便签，则插入到数据库中
+        if (note.id.isEmpty()) {         // create new note, save to db
             note.id = UUID.randomUUID().toString()
             note.save(object : SaveListener<String>() {
                 override fun done(p0: String?, p1: BmobException?) {
                     finishCallback()
                     if (p1 == null) {
-//                        toast("保存成功")
+//                        toast("save success")
                     } else {
-                        toast("保存失败: " + p1.message)
+                        toast("save failed: " + p1.message)
                     }
                 }
             }, this)
-        } else {                       // 已有的便签，则更新数据库
+        } else {                       // already exists note, update db
             note.createTime = System.currentTimeMillis()
             note.update(object : UpdateListener() {
                 override fun done(p0: BmobException?) {
                     finishCallback()
-                    if (p0 == null) {        // 更新成功
-//                        toast("更新成功")
+                    if (p0 == null) {        // update success
+//                        toast("update success")
                     } else {
-                        toast("更新失败: " + p0.message)
+                        toast("update failed: " + p0.message)
                     }
                 }
 
@@ -438,7 +424,7 @@ class EditActivity : AppCompatActivity() {
         }
 
         if (note.reminder > 0) {
-            // 如果存在先删除旧的事项
+            // delete if exists
             CalendarReminderUtils.deleteCalendarEvent(this, "EasyNote(${note.id})")
             note.reminder = note.reminder
             CalendarReminderUtils.addCalendarEvent(
@@ -450,13 +436,13 @@ class EditActivity : AppCompatActivity() {
     }
 
     /**
-     * 改变显示模式
+     * change mode
      */
     fun changeMode(m: Int) {
-        // 保存当前模式
+        // save current mode
         mode = m
         when (m) {
-            0, 2 -> {      // 编辑模式
+            0, 2 -> {      // edit mode
                 llPreview.visibility = View.VISIBLE
                 llAddSoundRecord.visibility = View.VISIBLE
                 llAddPicture.visibility = View.VISIBLE
@@ -467,7 +453,7 @@ class EditActivity : AppCompatActivity() {
                 tagView.setDeleteAble(true)
                 tvTitle.text = getString(R.string.edit_activity_edit_note)
             }
-            1 -> {      // 预览模式
+            1 -> {      // preview mode
                 llPreview.visibility = View.GONE
                 llAddSoundRecord.visibility = View.GONE
                 llAddPicture.visibility = View.GONE
@@ -486,7 +472,7 @@ class EditActivity : AppCompatActivity() {
     fun renderRichText(content: String) {
         RichText.fromMarkdown(content)
             .cache(CacheType.layout)
-            .scaleType(ImageHolder.ScaleType.fit_center) // 图片缩放方式
+            .scaleType(ImageHolder.ScaleType.fit_center) // picture scale type
 //            .imageLongClick(OnImageLongClickListener { imageUrls, position ->
 //
 //                return@OnImageLongClickListener true
@@ -516,7 +502,7 @@ class EditActivity : AppCompatActivity() {
 
 
     /**
-     * 选择提醒时间
+     * select reminderTime
      */
     fun selectReminderTime(callback: (date: Date, v: View?) -> Unit) {
         val pvTime = TimePickerBuilder(this, OnTimeSelectListener { date, v ->
@@ -524,7 +510,7 @@ class EditActivity : AppCompatActivity() {
         })
             .setType(BooleanArray(6, init = {
                 return@BooleanArray true
-            }))//分别对应年月日时分秒，默认全部显示
+            }))
             .build()
         pvTime.show()
     }

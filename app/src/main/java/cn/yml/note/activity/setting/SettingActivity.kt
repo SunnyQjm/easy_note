@@ -35,20 +35,20 @@ class SettingActivity : AppCompatActivity() {
 
         lmsAutoSyn.setChecked(App.isAutoSyn)
 
-        // 退出
+        // exit
         tvExit.setOnClickListener {
             BmobUser.logOut()
             jumpTo(LoginActivity::class.java)
         }
 
-        // 用户信息
+        // user info
         lmiUser.setOnClickListener {
             if(!BmobUser.isLogin()) {
                 jumpTo(LoginActivity::class.java)
             }
         }
 
-        // 是否自动同步
+        // is auto sync
         lmsAutoSyn.setOnCheckedChangeListener { buttonView, isChecked ->
             updateAutoSyn(isChecked)
         }

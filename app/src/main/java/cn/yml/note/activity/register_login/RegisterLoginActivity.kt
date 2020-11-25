@@ -23,7 +23,7 @@ import kotlinx.android.synthetic.main.bar.*
 import org.jetbrains.anko.design.snackbar
 
 /**
- * 一键登录页面
+ * One click login page
  */
 class RegisterLoginActivity : AppCompatActivity() {
 
@@ -47,7 +47,7 @@ class RegisterLoginActivity : AppCompatActivity() {
             hideSoftKeyboard(tvSendCode)
             //发送验证码回调
             val phone = etPhone.text.toString()
-            if (AccountValidatorUtil.isMobile(phone)) {      //发送验证码
+            if (AccountValidatorUtil.isMobile(phone)) {      // send verify code
                 BmobSMS.requestSMSCode(phone, "", object : QueryListener<Int>() {
                     @SuppressLint("ResourceAsColor")
                     override fun done(smsId: Int?, e: BmobException?) {
@@ -68,7 +68,6 @@ class RegisterLoginActivity : AppCompatActivity() {
                             }
                         } else {
                             tvSendCode.snackbar(R.string.send_vertify_code_fail)
-                            Log.e("发送验证码", e.message ?: "发送验证码失败")
                         }
                     }
 
@@ -78,7 +77,7 @@ class RegisterLoginActivity : AppCompatActivity() {
             }
         }
 
-        // 登录
+        // do login
         btnLogin.setOnClickListener {
             hideSoftKeyboard(btnLogin)
             val phone = etPhone.text.toString()
@@ -92,8 +91,6 @@ class RegisterLoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            println("phone: $phone")
-            println("code: $vertifyCode")
             BmobUser.signOrLoginByMobilePhone(phone, vertifyCode, object : LogInListener<User>() {
                 override fun done(p0: User?, p1: BmobException?) {
                     if (p1 == null) {

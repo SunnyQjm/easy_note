@@ -60,7 +60,7 @@ class TagActivity : AppCompatActivity() {
         noteAdapter?.bindToRecyclerView(recyclerView)
 
         when(App.selectMode) {
-            0 -> {      // 点击标签
+            0 -> {      // click tag
                 App.selectedTag?.let {
                     tvTitle.text = it.text
                     rxPermissions
@@ -77,7 +77,7 @@ class TagActivity : AppCompatActivity() {
                         }
                 }
             }
-            1 -> {      // 点击日历中的某一天
+            1 -> {      // click one day
                 val instance = Calendar.getInstance()
                 instance.timeInMillis = App.selectDay
                 val year = instance.get(Calendar.YEAR)
@@ -102,7 +102,7 @@ class TagActivity : AppCompatActivity() {
 
 
 
-        // 点击便签Item进入便签预览界面
+        // click item to preview note
         noteAdapter?.setOnItemClickListener { adapter, view, position ->
             App.note = noteAdapter!!.getItem(position)
             jumpTo(
@@ -120,7 +120,7 @@ class TagActivity : AppCompatActivity() {
             }
         }
 
-        // 长按删除
+        // Long click delete
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             val item = noteAdapter!!.getItem(position)
             alert(Appcompat, "", getString(R.string.confirm_delete_current_note)) {
@@ -137,7 +137,7 @@ class TagActivity : AppCompatActivity() {
         }
 
         smartRefreshView.setOnRefreshListener {
-            // 下拉刷新
+            // Pull down refresh
             App.selectedTag?.let {
                 getNotesByTag(it)
             }
@@ -190,7 +190,7 @@ class TagActivity : AppCompatActivity() {
     }
 
     /**
-     * 获取指定标签的Note
+     * get note by tag
      */
     fun getNotesByTag(t: Tag) {
         database.use {

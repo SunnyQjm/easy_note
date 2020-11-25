@@ -67,17 +67,16 @@ class NoteAdapter(mList: MutableList<Note>) : BaseQuickAdapter<Note, BaseViewHol
 }
 
 /**
- * 自动与云端的数据同步
+ * Auto sync
  */
 fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -> Unit = {}) {
-    if (BmobUser.isLogin()) {    // 已登录则尝试同步
+    if (BmobUser.isLogin()) {    // do sync after login
         BmobQuery<NetworkNote>()
             .addWhereEqualTo("user", BmobUser.getCurrentUser(User::class.java))
             .findObjects(object : FindListener<NetworkNote>() {
                 override fun done(p0: MutableList<NetworkNote>?, p1: BmobException?) {
                     if (p1 == null) {
                         if (p0 != null) {
-                            println("服务器返回的数据: ${p0.toJson()}")
                             val netIds = p0.map {
                                 return@map it.id
                             }
@@ -104,9 +103,8 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                             var isCallCallback = false
                             var alreadyUpload = 0
                             var alreadyDownload = 0
-                            // 处理需要上传的便签
+                            // is need upload note
                             needUpload.forEach {
-                                println("处理上传")
                                 it.save(object : SaveListener<String>() {
                                     override fun done(p0: String?, p1: BmobException?) {
                                         alreadyUpload++
@@ -119,9 +117,8 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                                 }, context, false)
                             }
 
-                            // 处理需要从云端同步到本地的便签
+                            // is need download from server
                             needDownload.forEach {
-                                println("处理下载")
                                 it.saveToLocal(context) {
                                     alreadyDownload++
                                     if (!isCallCallback && alreadyUpload == needUpload.size
@@ -138,12 +135,10 @@ fun NoteAdapter.autoSyn(context: Context, finishCallback: (p1: BmobException?) -
                             }
                         }
                     } else {
-                        context.toast("自动同步失败")
+                        context.toast("Auto sync failed!")
                     }
                 }
 
             })
-    } else {                    // 未登陆则不同步
-
     }
 }

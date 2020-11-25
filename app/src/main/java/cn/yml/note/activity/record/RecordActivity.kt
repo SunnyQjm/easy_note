@@ -9,7 +9,7 @@ import com.zzhoujay.richtext.callback.OnUrlClickListener
 import kotlinx.android.synthetic.main.activity_record.*
 
 /**
- * 录音页面
+ * Record page
  */
 class RecordActivity : AppCompatActivity() {
 
@@ -21,13 +21,7 @@ class RecordActivity : AppCompatActivity() {
     }
 
     private fun initView() {
-        val markdown = "蹭今难\n" +
-                "[起风了](276989035900740.file.m4a)\n" +
-                "哦送哦\n" +
-                "![](http://easy_note.qjm253.cn/2019/06/28/e3e3e241556245848c5fec50931eee25.jpg)\n" +
-                "\n111111\n" +
-                "![](http://easy_note.qjm253.cn/2019/06/28/e3e3e241556245848c5fec50931eee25.jpg)\n" +
-                "\n"
+        val markdown = "> test"
         RichText.fromMarkdown(markdown)
 
             .imageClick { imageUrls, position -> println(imageUrls.size) }

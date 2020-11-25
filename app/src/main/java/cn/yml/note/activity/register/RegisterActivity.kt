@@ -24,7 +24,7 @@ import kotlinx.android.synthetic.main.bar.*
 import org.jetbrains.anko.design.snackbar
 
 /**
- * 注册页面
+ * Register page
  */
 class RegisterActivity : AppCompatActivity() {
 
@@ -42,7 +42,7 @@ class RegisterActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        // 注册操作
+        // do register
         btnRegister.setOnClickListener {
             val phone = etPhone.text.toString()
             val code = etCode.text.toString()
@@ -68,7 +68,7 @@ class RegisterActivity : AppCompatActivity() {
             user.username = phone
             user.signOrLogin(code, object : SaveListener<User>() {
                 override fun done(p0: User?, p1: BmobException?) {
-                    if(p1 == null) {        // 注册成功
+                    if(p1 == null) {        // register success
                         jumpTo(MainActivity::class.java)
                     } else {
                         btnRegister.snackbar("Register failed: ${p1.message}")
@@ -79,12 +79,12 @@ class RegisterActivity : AppCompatActivity() {
 
         }
 
-        // 发送验证码
+        // send verify code
         tvSendCode.setOnClickListener {
             hideSoftKeyboard(tvSendCode)
-            //发送验证码回调
+            // send verify code callback
             val phone = etPhone.text.toString()
-            if (AccountValidatorUtil.isMobile(phone)) {      //发送验证码
+            if (AccountValidatorUtil.isMobile(phone)) {      // send verify code
                 BmobSMS.requestSMSCode(phone, "", object : QueryListener<Int>() {
                     @SuppressLint("ResourceAsColor")
                     override fun done(smsId: Int?, e: BmobException?) {
@@ -105,7 +105,6 @@ class RegisterActivity : AppCompatActivity() {
                             }
                         } else {
                             tvSendCode.snackbar(R.string.send_vertify_code_fail)
-                            Log.e("发送验证码", e.message ?: "发送验证码失败")
                         }
                     }
 

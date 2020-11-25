@@ -32,11 +32,11 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
 
     @SuppressLint("SetTextI18n")
     override fun onCalendarSelect(calendar: Calendar?, isClick: Boolean) {
-        tvLunar.visibility = View.VISIBLE
+//        tvLunar.visibility = View.VISIBLE
         tvYear.visibility = View.VISIBLE
-        tvMonthDay.text = calendar?.month.toString() + "月" + calendar?.day + "日"
+        tvMonthDay.text = calendar?.month.toString() + "-" + calendar?.day
         tvYear.text = calendar?.year.toString()
-        tvLunar.text = calendar?.lunar
+//        tvLunar.text = calendar?.lunar
         mYear = calendar?.year ?: 0
 
         Log.e(
@@ -61,7 +61,7 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
 
         tvMonthDay.setOnClickListener {
             calendarView.showYearSelectLayout(mYear)
-            tvLunar.visibility = View.GONE
+//            tvLunar.visibility = View.GONE
             tvYear.visibility = View.GONE
             tvMonthDay.text = mYear.toString()
         }
@@ -75,8 +75,8 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
         }
 
         tvYear.text = calendarView.curYear.toString()
-        tvMonthDay.text = "${calendarView.curMonth}月${calendarView.curDay}日"
-        tvLunar.text = "Today"
+        tvMonthDay.text = "${calendarView.curMonth}-${calendarView.curDay}"
+//        tvLunar.text = "Today"
         tvCurrentDay.text = calendarView.curDay.toString()
     }
 

@@ -66,7 +66,7 @@ class SearchActivity : AppCompatActivity() {
                 }
         }
 
-        // 点击便签Item进入便签预览界面
+        // click item to preview note
         noteAdapter?.setOnItemClickListener { adapter, view, position ->
             App.note = noteAdapter!!.getItem(position)
             jumpTo(
@@ -84,7 +84,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        // 长按删除
+        // Long click delete
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             val item = noteAdapter!!.getItem(position)
             alert(Appcompat, "", getString(R.string.confirm_delete_current_note)) {
@@ -104,7 +104,6 @@ class SearchActivity : AppCompatActivity() {
 
 
     private fun getAllNotes(key: String) {
-        println("key: $key")
         database.use {
             select("note")
                 .whereArgs("noteContent like {nc}",

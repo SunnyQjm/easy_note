@@ -47,15 +47,15 @@
                     android:textSize="10sp"
                     tools:ignore="SmallSp" />
 
-            <TextView
-                    android:id="@+id/tvLunar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center"
-                    android:textColor="#000000"
-                    android:textSize="10sp"
-                    tools:ignore="SmallSp" />
+<!--            <TextView-->
+<!--                    android:id="@+id/tvLunar"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="0dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:gravity="center"-->
+<!--                    android:textColor="#000000"-->
+<!--                    android:textSize="10sp"-->
+<!--                    tools:ignore="SmallSp" />-->
         </LinearLayout>
 
         <FrameLayout

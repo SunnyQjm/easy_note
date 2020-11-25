@@ -49,14 +49,14 @@ import org.jetbrains.anko.yesButton
 import java.util.*
 
 /**
- * 主界面
+ * Main page
  *
- * 显示便签列表，添加便签按钮
+ * display note list, add list button
  */
 class MainActivity : AppCompatActivity() {
 
     private var noteAdapter: NoteAdapter? = null
-    private var synIng = false           // 是否正在同步
+    private var synIng = false           // is syncing
     private val rxPermissions = RxPermissions(this)
     private var page = 1
 
@@ -104,7 +104,7 @@ class MainActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         noteAdapter?.bindToRecyclerView(recyclerView)
 
-        // 点击便签Item进入便签预览界面
+        // click item to view note
         noteAdapter?.setOnItemClickListener { adapter, view, position ->
             if (!synIngJudge()) {
                 App.note = noteAdapter!!.getItem(position)
@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 长按删除
+        // long click item to delete
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             if (!synIngJudge()) {
                 val item = noteAdapter!!.getItem(position)
@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
         imgRefresh.setOnClickListener {
             println("do permission request")
-            // 点击同步按钮强制同步（无论是何网络环境）
+            // force sync
             rxPermissions
                 .request(
                     Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -169,13 +169,13 @@ class MainActivity : AppCompatActivity() {
 
 
         smartRefreshView.setOnRefreshListener {
-            // 下拉刷新
+            // Pull down to refresh
             refresh()
             smartRefreshView.finishRefresh()
         }
 
         smartRefreshView.setOnLoadMoreListener {
-            // 上拉加载更多
+            // Pull up to load more
             page++
             getDataFromStorage(page)
             smartRefreshView.finishLoadMore()
@@ -221,14 +221,13 @@ class MainActivity : AppCompatActivity() {
             return
         println("do syn")
         if (!BmobUser.isLogin()) {
-            if (forceSyn) {          //忽略自动同步，手动同步时未登录则提示登录
+            if (forceSyn) {
                 imgRefresh.snackbar("Please login first", "Click here login", action = {
                     jumpTo(RegisterLoginActivity::class.java)
                 })
             }
             return
         }
-        // 如果设置开启了自动同步，则尝试自动同步
         if (App.isAutoSyn || forceSyn) {
             val animator = imgRefresh.rotate(
                 0f, 360f, duration = 500,
@@ -237,7 +236,7 @@ class MainActivity : AppCompatActivity() {
             )
             noteAdapter?.autoSyn(this) {
                 animator.cancel()
-                if (it == null) {        // 自动同步成功
+                if (it == null) {        // auto sync success
                     if (forceSyn) {
                         imgRefresh.snackbar("Sync success")
                     }
@@ -260,7 +259,7 @@ class MainActivity : AppCompatActivity() {
 
 
     /**
-     * 从本地获取数据
+     * load data from local
      */
     private fun getDataFromStorage(page: Int = 1, limit: Int = 10) {
         database.use {
@@ -296,7 +295,6 @@ class MainActivity : AppCompatActivity() {
         database.use {
             select("note", "tags")
                 .exec {
-                    print("exec")
                     val result = parseList(rowParser { tags: String ->
                         return@rowParser GsonUtil.json2TagList(tags)
                     })

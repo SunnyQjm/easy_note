@@ -33,27 +33,27 @@ data class Image(
  */
 data class Note(
     var id: String = "",
-    var noteTitle: String = "默认标题",                           // 便签标题
-    var noteContent: String = "默认内容",                         // 便签内容
-    var noteImages: MutableList<Image> = mutableListOf(),      // 便签图片
-    var noteRecording: MutableList<Record> = mutableListOf(),   // 录音
-    var tags: MutableList<Tag> = mutableListOf(),            // 标签
-    var createTime: Long = System.currentTimeMillis(),           // 创建时间
+    var noteTitle: String = "Default title",                           // note title
+    var noteContent: String = "Default content",                         // note content
+    var noteImages: MutableList<Image> = mutableListOf(),      // pictures
+    var noteRecording: MutableList<Record> = mutableListOf(),   // records
+    var tags: MutableList<Tag> = mutableListOf(),            // tags
+    var createTime: Long = System.currentTimeMillis(),           // create time
     var reminder: Long = -1,
-    var objectId: String = ""                                   // Bmob对象Id
+    var objectId: String = ""                                   // Bmob Id
 )
 
 data class NetworkNote(
     var id: String = "",
-    var noteTitle: String = "默认标题",                               // 便签标题
-    var noteContent: String = "默认内容",                             // 便签内容
-    var noteImages: MutableList<Image> = mutableListOf(),        // 便签图片
-    var noteRecording: MutableList<Record> = mutableListOf(),     // 录音
-    var tags: MutableList<Tag> = mutableListOf(),                   // 标签
+    var noteTitle: String = "Default title",                               // note title
+    var noteContent: String = "Default content",                             // note content
+    var noteImages: MutableList<Image> = mutableListOf(),        // note pictures
+    var noteRecording: MutableList<Record> = mutableListOf(),     // records
+    var tags: MutableList<Tag> = mutableListOf(),                   // tags
     var user: User? = null,
     var reminder: Long = -1,
-    // 关联的用户
-    var createTime: Long = System.currentTimeMillis()               // 创建时间
+    // assoiate user
+    var createTime: Long = System.currentTimeMillis()               // create time
 ) : BmobObject()
 
 
@@ -70,7 +70,6 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
         noteRecording = this.noteRecording
     )
 
-    println("正在同步: ${this.toJson()}")
     var needDownloadCount = note.noteRecording.size + note.noteImages.size
     if (needDownloadCount == 0) {
         note.saveLocal(context)
@@ -79,7 +78,7 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
     }
 
 
-    // 将远程的录音下载到本地
+    // download record from server
     note.noteRecording.forEach { record ->
         println("do download File: ${record.toJson()}")
         BmobFile(record.fileName, "", record.url)
@@ -88,7 +87,7 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
                     if (p1 == null) {
                         record.filePath = savePath ?: ""
                     } else {
-                        Log.e("NetworkNote.saveToLocal", "下载失败: ${record.toJson()}")
+                        Log.e("NetworkNote.saveToLocal", "Download failed: ${record.toJson()}")
                     }
                     needDownloadCount--
                     if (needDownloadCount == 0) {
@@ -105,7 +104,7 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
             })
     }
 
-    // 将远程的图片下载到本地
+    // download images from server
     note.noteImages.forEach { image ->
         println("do download File: ${image.toJson()}")
         BmobFile(image.fileName, "", image.url)
@@ -114,7 +113,7 @@ fun NetworkNote.saveToLocal(context: Context, finishCallback: () -> Unit) {
                     if (p1 == null) {
                         image.filePath = savePath ?: ""
                     } else {
-                        Log.e("NetworkNote.saveToLocal", "下载失败: ${image.toJson()}")
+                        Log.e("NetworkNote.saveToLocal", "Download failed: ${image.toJson()}")
                     }
                     needDownloadCount--
                     if (needDownloadCount == 0) {
@@ -192,7 +191,7 @@ fun Note.delete(updateListener: UpdateListener, context: Context) {
 }
 
 /**
- * 保存
+ * save
  */
 fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLocalStorage: Boolean = true) {
     println("do save: ${this.toJson()}")
@@ -239,11 +238,9 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
     if (needUploadCount > 0) {
 
         if(records.isNotEmpty()) {
-            // 批量上传录音
             BmobFile.uploadBatch(records.toTypedArray(), object : UploadBatchListener {
                 override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
                     if (p0 != null && p0.size > 0) {
-                        // 录音上传成功
                         networkNote.noteRecording = p0.map { bf ->
                             val record = this@save.noteRecording.filter {
                                 it.fileName == bf.filename
@@ -266,18 +263,16 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
                 }
 
                 override fun onError(p0: Int, p1: String?) {
-                    saveListener.done("", BmobException(p1 ?: "上传录音失败"))
+                    saveListener.done("", BmobException(p1 ?: "Upload record failed"))
                 }
 
             })
         }
 
         if(images.isNotEmpty()) {
-            // 批量上传图片
             BmobFile.uploadBatch(images.toTypedArray(), object : UploadBatchListener {
                 override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
                     if (p0 != null && p0.size > 0) {
-                        // 录音上传成功
                         networkNote.noteImages = p0.map { bf ->
                             val record = this@save.noteImages.filter {
                                 it.fileName == bf.filename
@@ -299,7 +294,7 @@ fun Note.save(saveListener: SaveListener<String>, context: Context, needSaveToLo
                 }
 
                 override fun onError(p0: Int, p1: String?) {
-                    saveListener.done("", BmobException(p1 ?: "上传图片失败"))
+                    saveListener.done("", BmobException(p1 ?: "Upload picture failed"))
                 }
 
             })
@@ -350,7 +345,6 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
 
     var needUploadCount = records.size + images.size
     if (needUploadCount > 0) {
-        // 上传录音
         if(records.isNotEmpty()) {
             BmobFile.uploadBatch(records, object : UploadBatchListener {
                 override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
@@ -366,7 +360,6 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
                             )
                         }.toMutableList()
                         newRecords.addAll(this@update.noteRecording.filter { it.url.isNotEmpty() })
-                        // 录音上传成功
                         networkNote.noteRecording = newRecords
                     }
                     needUploadCount--
@@ -379,14 +372,14 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
                 }
 
                 override fun onError(p0: Int, p1: String?) {
-                    updateListener.done(BmobException(p1 ?: "上传录音失败"))
+                    updateListener.done(BmobException(p1 ?: "Upload record failed"))
                 }
 
             })
         }
 
         if(images.isNotEmpty()) {
-            // 上传图片
+            // Upload picture
             BmobFile.uploadBatch(images, object : UploadBatchListener {
                 override fun onSuccess(p0: MutableList<BmobFile>?, p1: MutableList<String>?) {
                     if (p0 != null) {
@@ -400,7 +393,7 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
                             )
                         }.toMutableList()
                         newImages.addAll(this@update.noteImages.filter { it.url.isNotEmpty() })
-                        // 录音上传成功
+                        // Upload record success
                         networkNote.noteImages = newImages
                     }
                     needUploadCount--
@@ -413,7 +406,7 @@ fun Note.update(updateListener: UpdateListener, context: Context) {
                 }
 
                 override fun onError(p0: Int, p1: String?) {
-                    updateListener.done(BmobException(p1 ?: "上传录音失败"))
+                    updateListener.done(BmobException(p1 ?: "Upload record failed"))
                 }
 
             })

@@ -5,7 +5,7 @@ import android.os.Bundle
 import cn.yml.note.R
 
 /**
- * 便签预览界面
+ * note preview
  */
 class PreviewActivity : AppCompatActivity() {
 

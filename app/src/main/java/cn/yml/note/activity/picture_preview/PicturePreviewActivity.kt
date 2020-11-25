@@ -9,7 +9,7 @@ import com.sunny.scrollphotoview.ScrollPhotoView
 import kotlinx.android.synthetic.main.activity_picture_preview.*
 
 /**
- * 图片预览视图
+ * Picture preview
  */
 class PicturePreviewActivity : AppCompatActivity() {
 
@@ -43,7 +43,6 @@ class PicturePreviewActivity : AppCompatActivity() {
 
         spv.onScrollPhotoViewClickListener = object : ScrollPhotoView.OnScrollPhotoViewClickListener {
             override fun onClick(e: MotionEvent?) {
-                // 单机返回
                 onBackPressed()
             }
 

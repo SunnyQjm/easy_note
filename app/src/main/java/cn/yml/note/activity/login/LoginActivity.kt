@@ -20,7 +20,7 @@ import kotlinx.android.synthetic.main.bar.*
 import org.jetbrains.anko.design.snackbar
 
 /**
- * 登录页面
+ * Login page
  */
 class LoginActivity : AppCompatActivity() {
 
@@ -40,7 +40,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
 
-        // 执行登录操作
+        // do login
         btnLogin.setOnClickListener {
             hideSoftKeyboard(btnLogin)
             val phone = etPhone.text.toString()
@@ -58,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
             user.setPassword(password)
             BmobUser.loginByAccount(phone, password, object : LogInListener<User>() {
                 override fun done(p0: User?, p1: BmobException?) {
-                    if(p1 == null) {        // 登录成功
+                    if(p1 == null) {        // login success
                         jumpTo(MainActivity::class.java)
                     } else {
                         btnLogin.snackbar("Login failed: ${p1.message}")
@@ -68,12 +68,12 @@ class LoginActivity : AppCompatActivity() {
         }
 
 
-        // 跳转到注册
+        // jump to register
         tvRegisterNow.setOnClickListener {
             jumpTo(RegisterActivity::class.java)
         }
 
-        // 跳转到一键登录
+        // jump to one click login
         tvOneClickLogin.setOnClickListener {
             jumpTo(RegisterLoginActivity::class.java)
         }
