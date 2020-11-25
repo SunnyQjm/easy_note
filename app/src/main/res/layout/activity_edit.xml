@@ -83,35 +83,55 @@
             android:layout_height="0dp"
             app:layout_constraintTop_toBottomOf="@id/ll_time_reminder"
             android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="@+id/textView2" app:layout_constraintStart_toStartOf="@+id/textView2"
-            android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintEnd_toEndOf="@+id/textView2"
+            app:layout_constraintStart_toStartOf="@+id/textView2"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
 
-    >
-        <androidx.core.widget.NestedScrollView android:layout_width="match_parent"
-                                               android:layout_height="match_parent">
+            android:id="@+id/frameLayout">
+
+        <androidx.core.widget.NestedScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
             <TextView
-                    android:text="预览"
+                    android:text="@string/preview"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:id="@+id/tvPreview"
-            />
+                    android:id="@+id/tvPreview" />
         </androidx.core.widget.NestedScrollView>
 
 
     </FrameLayout>
+
     <EditText
             android:id="@+id/etContent"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:inputType="textMultiLine"
             android:background="@drawable/et_white_bg"
-            android:hint="在此输入便签内容（支持Markdown语法哦～）"
+            android:hint="@string/please_input_here_support_markdown"
             android:gravity="top"
             android:textSize="14sp"
             app:layout_constraintTop_toBottomOf="@id/ll_time_reminder"
             android:layout_marginTop="8dp"
             app:layout_constraintEnd_toEndOf="@+id/textView2" app:layout_constraintStart_toStartOf="@+id/textView2"
             android:layout_marginBottom="8dp" app:layout_constraintBottom_toTopOf="@+id/linearLayout"/>
+
+    <cn.yml.note.views.TapHoldUpButton
+            android:id="@+id/tapHoldBtn"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            app:thub_ringStrokeWidth="2dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            app:thub_ringColor="@color/colorPrimary"
+            app:thub_circleColor="@color/colorPrimary"
+            app:thub_circleGap="3dp"
+            app:thub_circleColorOhHold="#FA1A1A"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            />
 
 
     <LinearLayout
@@ -133,33 +153,6 @@
             <ImageView
                     android:src="@drawable/picture"
                     android:layout_width="30dp" android:layout_height="30dp"/>
-            <TextView
-                    android:layout_marginTop="5dp"
-                    android:text="插入图片"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_color"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        </LinearLayout>
-        <LinearLayout
-                android:id="@+id/llAddSoundRecord"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:layout_width="0dp" android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:orientation="vertical"
-        >
-
-            <ImageView
-                    android:src="@drawable/sound_recording"
-                    android:layout_width="30dp" android:layout_height="30dp"/>
-            <TextView
-                    android:layout_marginTop="5dp"
-                    android:text="插入录音"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_color"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
         </LinearLayout>
 
         <LinearLayout
@@ -174,13 +167,6 @@
             <ImageView
                     android:src="@drawable/tag"
                     android:layout_width="30dp" android:layout_height="30dp"/>
-            <TextView
-                    android:layout_marginTop="5dp"
-                    android:text="添加标签"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_color"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
         </LinearLayout>
 
 
@@ -196,14 +182,18 @@
             <ImageView
                     android:src="@drawable/preview"
                     android:layout_width="30dp" android:layout_height="30dp"/>
-            <TextView
-                    android:id="@+id/tvPreviewBtnText"
-                    android:layout_marginTop="5dp"
-                    android:text="预览便签"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_color"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+                android:id="@+id/llAddSoundRecord"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_width="0dp" android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:orientation="vertical"
+                >
+
         </LinearLayout>
 
 

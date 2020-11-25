@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             if (!synIngJudge()) {
                 val item = noteAdapter!!.getItem(position)
-                alert(Appcompat, "", "确认要删除当前便签？") {
+                alert(Appcompat, "", "Confirm delete current note?") {
                     yesButton {
                         item?.delete(object : UpdateListener() {
                             override fun done(p0: BmobException?) {
@@ -157,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     if (granted) {
                         autoSyn(true)
                     } else {
-                        toast("没有读写权限")
+                        toast(getString(R.string.have_not_write_perimission))
                     }
                 }
         }
@@ -210,7 +210,7 @@ class MainActivity : AppCompatActivity() {
                     autoSyn()
                     getAllTags()
                 } else {
-                    toast("没有读写权限")
+                    toast(getString(R.string.have_not_write_perimission))
                 }
             }
     }
@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         println("do syn")
         if (!BmobUser.isLogin()) {
             if (forceSyn) {          //忽略自动同步，手动同步时未登录则提示登录
-                imgRefresh.snackbar("请先登录", "点此登录", action = {
+                imgRefresh.snackbar("Please login first", "Click here login", action = {
                     jumpTo(RegisterLoginActivity::class.java)
                 })
             }
@@ -239,11 +239,11 @@ class MainActivity : AppCompatActivity() {
                 animator.cancel()
                 if (it == null) {        // 自动同步成功
                     if (forceSyn) {
-                        imgRefresh.snackbar("同步成功")
+                        imgRefresh.snackbar("Sync success")
                     }
                     refresh();
                 } else {
-                    toast("同步失败")
+                    toast("Sync failed")
                 }
             }
         } else {
@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun synIngJudge(): Boolean {
         if (synIng) {
-            imgRefresh.snackbar("正在同步便签，请稍后重试")
+            imgRefresh.snackbar("Syncing, please wait")
         }
         return synIng
     }

@@ -28,7 +28,7 @@ class SettingActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        tvTitle.text = "设置"
+        tvTitle.text = getString(R.string.setting)
         tvRight.visibility = View.GONE
 
 
@@ -58,7 +58,7 @@ class SettingActivity : AppCompatActivity() {
         super.onResume()
         val user = BmobUser.getCurrentUser(User::class.java)
         if(!BmobUser.isLogin()) {
-            lmiUser.setValue("点此登录")
+            lmiUser.setValue(getString(R.string.click_here_login))
         } else{
             lmiUser.setValue(
                 user.mobilePhoneNumber

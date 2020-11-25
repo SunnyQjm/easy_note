@@ -32,7 +32,6 @@ class RecordActivity : AppCompatActivity() {
 
             .imageClick { imageUrls, position -> println(imageUrls.size) }
             .urlClick {
-                println("click: $it")
                 false
             }
             .into(tvRichText)

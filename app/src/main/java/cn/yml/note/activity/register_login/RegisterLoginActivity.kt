@@ -39,7 +39,7 @@ class RegisterLoginActivity : AppCompatActivity() {
             onBackPressed()
         }
 
-        tvTitle.text = "一键登录"
+        tvTitle.text = getString(R.string.one_click_login)
 
         tvRight.visibility = View.GONE
 
@@ -99,7 +99,7 @@ class RegisterLoginActivity : AppCompatActivity() {
                     if (p1 == null) {
                         jumpTo(MainActivity::class.java)
                     } else {
-                        btnLogin.snackbar("登录失败，请检查验证码是否正确！${p1.message}")
+                        btnLogin.snackbar("Login failed, please check whether verify code is correct. ${p1.message}")
                         println(p1.message?:"")
                     }
                 }

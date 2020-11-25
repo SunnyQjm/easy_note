@@ -34,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun initView() {
         tvRight.visibility = View.GONE
-        tvTitle.text = "登录"
+        tvTitle.text = getString(R.string.login)
         imgBack.setOnClickListener {
             onBackPressed()
         }
@@ -61,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
                     if(p1 == null) {        // 登录成功
                         jumpTo(MainActivity::class.java)
                     } else {
-                        btnLogin.snackbar("登录失败: ${p1.message}")
+                        btnLogin.snackbar("Login failed: ${p1.message}")
                     }
                 }
             })

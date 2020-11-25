@@ -72,7 +72,7 @@ class TagActivity : AppCompatActivity() {
                             if (granted) {
                                 getNotesByTag(it)
                             } else {
-                                toast("没有读写权限")
+                                toast(getString(R.string.have_not_write_perimission))
                             }
                         }
                 }
@@ -84,7 +84,7 @@ class TagActivity : AppCompatActivity() {
                 val month = instance.get(Calendar.MONTH) + 1
                 val day = instance.get(Calendar.DAY_OF_MONTH)
 
-                tvTitle.text = "${year}年${month}月${day}日"
+                tvTitle.text = "${year}-${month}-${day}"
                 rxPermissions
                     .request(
                         Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -94,7 +94,7 @@ class TagActivity : AppCompatActivity() {
                         if (granted) {
                             getNotesByCalendar(App.selectDay)
                         } else {
-                            toast("没有读写权限")
+                            toast(getString(R.string.have_not_write_perimission))
                         }
                     }
             }
@@ -123,7 +123,7 @@ class TagActivity : AppCompatActivity() {
         // 长按删除
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             val item = noteAdapter!!.getItem(position)
-            alert(Appcompat, "", "确认要删除当前便签？") {
+            alert(Appcompat, "", getString(R.string.confirm_delete_current_note)) {
                 yesButton {
                     item?.delete(object : UpdateListener() {
                         override fun done(p0: BmobException?) {

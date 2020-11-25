@@ -15,7 +15,7 @@
             android:id="@+id/lmiUser"
             android:layout_marginTop="10dp"
             android:padding="10dp"
-            app:menu_title="用户"
+            app:menu_title="User"
             app:menu_value="18340857280"
             android:background="@drawable/ripple_bg_white"
             android:layout_width="match_parent"
@@ -38,7 +38,7 @@
 
     <TextView
             android:id="@+id/tvExit"
-            android:text="退出"
+            android:text="@string/exit"
             android:textColor="@color/text_color"
             android:gravity="center"
             android:padding="10dp"

@@ -76,7 +76,7 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
 
         tvYear.text = calendarView.curYear.toString()
         tvMonthDay.text = "${calendarView.curMonth}月${calendarView.curDay}日"
-        tvLunar.text = "今日"
+        tvLunar.text = "Today"
         tvCurrentDay.text = calendarView.curDay.toString()
     }
 
@@ -92,7 +92,7 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
                     getAllNotes()
                     renderReminder()
                 } else {
-                    toast("没有读写权限")
+                    toast("Have no write permission")
                 }
             }
 
@@ -100,7 +100,7 @@ class CalendarActivity : BaseCalendarActivity(), CalendarView.OnCalendarSelectLi
     }
 
     /**
-     * 得到所有的笔记
+     * Get all note
      */
     private fun getAllNotes() {
         database.use {

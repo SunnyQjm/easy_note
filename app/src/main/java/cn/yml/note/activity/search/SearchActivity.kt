@@ -61,7 +61,7 @@ class SearchActivity : AppCompatActivity() {
                     if (granted) {
                         getAllNotes(etSearch.text.toString())
                     } else {
-                        toast("没有读写权限")
+                        toast(getString(R.string.have_not_write_perimission))
                     }
                 }
         }
@@ -87,7 +87,7 @@ class SearchActivity : AppCompatActivity() {
         // 长按删除
         noteAdapter?.setOnItemLongClickListener { adapter, view, position ->
             val item = noteAdapter!!.getItem(position)
-            alert(Appcompat, "", "确认要删除当前便签？") {
+            alert(Appcompat, "", getString(R.string.confirm_delete_current_note)) {
                 yesButton {
                     item?.delete(object : UpdateListener() {
                         override fun done(p0: BmobException?) {
@@ -110,7 +110,6 @@ class SearchActivity : AppCompatActivity() {
                 .whereArgs("noteContent like {nc}",
                     "nc" to "%$key%")
                 .exec {
-                    println("fuck")
                     val result =
                         parseList(rowParser { id: String, noteTitle: String, noteContent: String, noteImages: String,
                                               noteRecording: String, tags: String, createTime: Long, reminder: Long, objectId: String ->

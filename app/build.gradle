@@ -73,19 +73,15 @@ dependencies {
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
     implementation "org.jetbrains.anko:anko-design:$anko_version" // For SnackBars
 
-    // sql
-//    implementation 'ninja.sakib:BelleORM:v1.8'
-//    implementation "org.jetbrains.anko:anko-sqlite:$anko_version"
     implementation "org.jetbrains.anko:anko:$anko_version"
-
-//    // App update
-//    implementation 'com.qianwen:update-app:3.5.2'
-//    implementation 'com.qianwen:update-app-kotlin:1.2.3'
 
     implementation 'com.android.support:multidex:1.0.3'
 
     implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.46'
     implementation 'com.github.DingMouRen:LayoutManagerGroup:1e6f4f96eb'
+
+    implementation 'com.tencent.aai:aai:2.1.5:@aar'
+    implementation 'org.slf4j:slf4j-api:1.7.25'
 
 
     implementation 'androidx.core:core-ktx:1.0.2'

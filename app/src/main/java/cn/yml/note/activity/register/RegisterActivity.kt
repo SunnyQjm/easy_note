@@ -37,7 +37,7 @@ class RegisterActivity : AppCompatActivity() {
 
     private fun initView() {
         tvRight.visibility = View.GONE
-        tvTitle.text = "注册"
+        tvTitle.text = getString(R.string.register)
         imgBack.setOnClickListener {
             onBackPressed()
         }
@@ -58,7 +58,7 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             if(password != rePassword) {
-                btnRegister.snackbar("两次输入的密码不一致")
+                btnRegister.snackbar(getString(R.string.password_not_same))
                 return@setOnClickListener
             }
 
@@ -71,7 +71,7 @@ class RegisterActivity : AppCompatActivity() {
                     if(p1 == null) {        // 注册成功
                         jumpTo(MainActivity::class.java)
                     } else {
-                        btnRegister.snackbar("注册失败: ${p1.message}")
+                        btnRegister.snackbar("Register failed: ${p1.message}")
                     }
                 }
 
