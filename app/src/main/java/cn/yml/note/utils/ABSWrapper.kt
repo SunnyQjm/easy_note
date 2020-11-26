@@ -10,6 +10,8 @@ import com.tencent.aai.exception.ServerException
 import com.tencent.aai.listener.AudioRecognizeResultListener
 import com.tencent.aai.model.AudioRecognizeRequest
 import com.tencent.aai.model.AudioRecognizeResult
+import com.tencent.aai.model.type.AudioRecognizeTemplate
+import com.tencent.aai.model.type.EngineModelType
 
 class ABSWrapper {
     companion object {
@@ -34,6 +36,7 @@ class ABSWrapper {
             aaiClient = AAIClient(context, appId, projectId, secretId, credentialProvider)
             audioRecognizeRequest = AudioRecognizeRequest.Builder()
                 .pcmAudioDataSource(AudioRecordDataSource())
+                .template(AudioRecognizeTemplate(EngineModelType.EngineModelType16KEN, 0, 1))
                 .build()
             val audioRecognizeResultListener = object : AudioRecognizeResultListener {
                 override fun onSliceSuccess(

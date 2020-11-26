@@ -194,14 +194,12 @@ class EditActivity : AppCompatActivity() {
                                 // insert segment
                                 val index = etContent.selectionStart
                                 // Delete extra period
-                                if (it.last() == '。') {
-                                    it.dropLast(1)
-                                }
+                                val result = it.substringBefore("。");
                                 val editable = etContent.editableText
                                 if (index < 0 || index >= editable.length) {
-                                    editable.append(it)
+                                    editable.append(result)
                                 } else {
-                                    editable.insert(index, it)
+                                    editable.insert(index, result)
                                 }
                             })
                         }
